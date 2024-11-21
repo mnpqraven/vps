@@ -5,16 +5,10 @@ pub fn deploy_service(service: Service, kind: DeploymentKind) {
         DeploymentKind::Docker => deploy_docker(service),
     }
 }
+
 fn deploy_docker(service: Service) {
     let cmd = std::process::Command::new("sudo")
-        .args([
-            "docker",
-            "compose",
-            "up",
-            "--detach",
-            &service.service_name,
-        ])
+        .args(["docker", "compose", "up", "--detach", &service.service_name])
         .output()
         .expect("compose deploy error, correct service name?");
-
 }
