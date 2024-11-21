@@ -1,0 +1,11 @@
+# TODO: update meta
+
+[workspace]
+members = ["vps-center-hub", "vps-do"]
+resolver = "2"
+
+[workspace.package]
+version = "1.2.3"
+authors = ["Nice Folks"]
+description = "A short description of my package"
+documentation = "https://example.com/bar"

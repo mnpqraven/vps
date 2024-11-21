@@ -1,0 +1,20 @@
+use crate::actions::repo_list::{DeploymentKind, Service};
+
+pub fn deploy_service(service: Service, kind: DeploymentKind) {
+    match kind {
+        DeploymentKind::Docker => deploy_docker(service),
+    }
+}
+fn deploy_docker(service: Service) {
+    let cmd = std::process::Command::new("sudo")
+        .args([
+            "docker",
+            "compose",
+            "up",
+            "--detach",
+            &service.service_name,
+        ])
+        .output()
+        .expect("compose deploy error, correct service name?");
+
+}
