@@ -1,0 +1,13 @@
+[package]
+name = "vps-api"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+
+[dependencies]
+axum = "0.7.9"
+serde = { version = "1.0.215", features = ["derive"] }
+tokio = { version = "1.41.1", features = ["full"] }
+tracing-subscriber = "0.3.18"
