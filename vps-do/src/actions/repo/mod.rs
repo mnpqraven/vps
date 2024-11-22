@@ -1,9 +1,11 @@
 use super::repo_list::repo_list;
-use crate::utils::args::RepoCommands;
+use crate::utils::args::{RepoBuildTarget, RepoCommands};
+use build::build_all;
 use clone::clone_all;
 use pull::pull_single;
 use std::collections::HashSet;
 
+pub mod build;
 pub mod clone;
 pub mod pull;
 
@@ -30,6 +32,19 @@ pub fn handle_repo_arg(arg: &RepoCommands) {
                 pull_single(&path);
             }
             println!("Pulling done");
+        }
+        RepoCommands::Build(e) => handle_build(e),
+    }
+}
+
+fn handle_build(args: &RepoBuildTarget) {
+    println!("build_all (WIP)");
+    dbg!(args);
+    match args {
+        RepoBuildTarget::All => build_all(),
+        RepoBuildTarget::Bins { bins } => {
+            // TODO: check existence
+            println!("building {} service(s): {}", bins.len(), bins.join(", "));
         }
     }
 }

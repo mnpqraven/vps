@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -21,12 +21,19 @@ pub enum RepoCommands {
     List,
     Clone,
     Pull,
+    #[command(subcommand)]
+    Build(RepoBuildTarget),
+}
+
+#[derive(Subcommand, Debug)]
+pub enum RepoBuildTarget {
+    All,
+    Bins{ bins: Vec<String> },
 }
 
 #[derive(Subcommand, Debug)]
 pub enum ServiceCommands {
     /// Lists running services
     List,
-    Build,
     Deploy,
 }

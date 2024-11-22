@@ -8,7 +8,6 @@ pub mod list;
 pub fn handle_service_arg(arg: &ServiceCommands) {
     match arg {
         ServiceCommands::List => list_running_service(),
-        ServiceCommands::Build => todo!(),
         ServiceCommands::Deploy => todo!(),
     }
 }

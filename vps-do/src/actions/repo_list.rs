@@ -12,7 +12,9 @@ pub struct Service {
 }
 
 pub enum DeploymentKind {
+    /// if the deployment is containerized
     Docker,
+    Shell,
 }
 
 pub enum BuildKind {
@@ -41,7 +43,7 @@ pub fn repo_list() -> Vec<Service> {
             bin_name: Some("vps-rpc".to_string()),
         }),
         // TODO:
-        _deployment: None,
+        _deployment: Some(DeploymentKind::Shell),
     };
 
     let vps_api: Service = Service {
@@ -53,7 +55,7 @@ pub fn repo_list() -> Vec<Service> {
             bin_name: Some("vps-api".to_string()),
         }),
         // TODO:
-        _deployment: None,
+        _deployment: Some(DeploymentKind::Shell),
     };
 
     let vps_cli: Service = Service {

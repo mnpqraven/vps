@@ -8,6 +8,7 @@ use crate::utils::config_parse::read_config_toml;
 /// pull a service repo in path
 pub fn pull_single(path: &str) {
     println!("Pulling {path}");
+    // TODO: unwrap
     let config = read_config_toml().unwrap();
     let out_dir = Path::new(&config.general.home).join(path);
 
@@ -16,6 +17,9 @@ pub fn pull_single(path: &str) {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
+        // TODO: unwrap
         .unwrap();
+
+    // TODO: unwrap
     cmd.wait().unwrap();
 }

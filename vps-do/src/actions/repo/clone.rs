@@ -19,6 +19,7 @@ pub fn clone_all() {
 
     // TODO: check for success/failed tasks
     for url in &unique_urls {
+        // TODO: unwrap
         clone_single(url).unwrap();
     }
     println!("Cloned {} repos", &unique_urls.len());
@@ -39,8 +40,10 @@ pub fn clone_single(url: &str) -> Result<(), Box<dyn Error>> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
+        // TODO: unwrap
         .unwrap();
 
+    // TODO: unwrap
     cmd.wait().unwrap();
     Ok(())
 }
