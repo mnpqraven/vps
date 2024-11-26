@@ -1,3 +1,7 @@
+use std::path::Path;
+
+use crate::utils::config_parse::read_config_toml;
+
 // TODO: json schema after making builder
 pub struct Service {
     pub service_name: String,
@@ -9,6 +13,15 @@ pub struct Service {
     pub build: BuildKind,
     /// relative path (from $HOME) to the repo directory
     pub relative_root: String,
+}
+
+impl Service {
+    pub fn absolute_path(&self) -> String {
+        let conf = read_config_toml().unwrap();
+        let true_path = Path::new(&conf.general.home).join(self.relative_root.clone());
+        let true_path = true_path.to_string_lossy();
+        true_path.to_string()
+    }
 }
 
 pub enum DeploymentKind {
@@ -24,7 +37,9 @@ pub enum BuildKind {
 }
 
 pub struct ScriptBuildConfig {}
-pub struct DockerBuildConfig {}
+pub struct DockerBuildConfig {
+    pub is_compose: bool,
+}
 pub struct CargoBuildConfig {
     /// if the build target is not default and needs to be built via `--bin`
     /// then this is the bin name
@@ -74,7 +89,7 @@ pub fn repo_list() -> Vec<Service> {
         url: "https://github.com/mnpqraven/othi-monorepo".to_string(),
         relative_root: "service_repos/othi-monorepo".to_string(),
         _path: None,
-        build: BuildKind::Docker(DockerBuildConfig {}),
+        build: BuildKind::Docker(DockerBuildConfig { is_compose: true }),
         _deployment: Some(DeploymentKind::Docker),
     };
 
