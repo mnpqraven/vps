@@ -1,6 +1,7 @@
 use services::greeter::{greeter_server::GreeterServer, MyGreeter, FILE_DESCRIPTOR_SET};
 use tonic::transport::Server;
 
+pub mod types;
 pub mod services;
 pub mod utils;
 

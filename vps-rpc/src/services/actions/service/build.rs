@@ -1,4 +1,5 @@
-use super::{BuildKind, CargoBuildConfig, DockerBuildConfig, ScriptBuildConfig, Service};
+use super::Service;
+use crate::types::BuildKind;
 use std::process::Stdio;
 
 /// builds a service

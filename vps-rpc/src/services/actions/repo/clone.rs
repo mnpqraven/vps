@@ -1,4 +1,4 @@
-use crate::{services::actions::repo_list::repo_list, utils::read_config_toml};
+use crate::{services::actions::service::repo_list, utils::read_config_toml};
 use std::{
     collections::HashSet,
     error::Error,

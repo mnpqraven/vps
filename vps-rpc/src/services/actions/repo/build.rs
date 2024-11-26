@@ -1,7 +1,4 @@
-use crate::services::actions::{
-    repo_list::repo_list,
-    service::{BuildKind, CargoBuildConfig, DockerBuildConfig, Service},
-};
+use crate::services::actions::service::{repo_list, BuildKind, Service};
 use std::{
     env,
     process::{Command, Stdio},
@@ -11,15 +8,15 @@ pub fn build_all() {
     println!("building all services");
     let list = repo_list();
     for service in list {
-        match &service.build {
-            BuildKind::Script(_script_build_config) => {}
-            BuildKind::Docker(config) => build_docker(&service, config),
-            BuildKind::Cargo(config) => build_cargo(&service, config),
+        match &service.build_config {
+            BuildKind::Script => {}
+            BuildKind::Docker => build_docker(&service),
+            BuildKind::Cargo => build_cargo(&service),
         }
     }
 }
 
-fn build_cargo(service: &Service, config: &CargoBuildConfig) {
+fn build_cargo(service: &Service) {
     let absolute_path = service.absolute_path();
     dbg!(&absolute_path);
     // this relative root won't cd to the correct path right away, need to
@@ -30,7 +27,7 @@ fn build_cargo(service: &Service, config: &CargoBuildConfig) {
 
     // either "build" or "build --bin [name]"
     let mut args = vec!["build"];
-    if let Some(bin_name) = &config.bin_name {
+    if let Some(bin_name) = &service.build_config.unwrap().bin_name {
         args.push("--bin");
         args.push(bin_name.as_str());
     }
@@ -47,7 +44,7 @@ fn build_cargo(service: &Service, config: &CargoBuildConfig) {
     let _ = env::set_current_dir(default_pwd);
 }
 
-fn build_docker(service: &Service, config: &DockerBuildConfig) {
+fn build_docker(service: &Service) {
     let absolute_path = service.absolute_path();
     let default_pwd = env::current_dir().unwrap();
     // cd

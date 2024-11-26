@@ -1,4 +1,4 @@
-use super::repo_list::repo_list;
+use super::service::repo_list;
 use crate::utils::args::{RepoBuildTarget, RepoCommands};
 use build::build_all;
 use clone::clone_all;
