@@ -1,0 +1,13 @@
+syntax = "proto3";
+package service;
+import "google/protobuf/empty.proto";
+import "types/build.proto";
+
+message Service {
+  string service_name = 1;
+  string url = 2;
+  optional string _path = 3;
+  optional types.deployment.DeploymentKind _deployment = 4;
+  types.build.BuildKind build = 5;
+  string relative_root = 6;
+}
