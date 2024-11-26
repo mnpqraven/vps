@@ -1,8 +1,5 @@
+use super::{BuildKind, CargoBuildConfig, DockerBuildConfig, ScriptBuildConfig, Service};
 use std::process::Stdio;
-
-use crate::actions::repo_list::{
-    BuildKind, CargoBuildConfig, DockerBuildConfig, ScriptBuildConfig, Service,
-};
 
 /// builds a service
 pub fn build_service(service: Service, kind: BuildKind) {
@@ -13,7 +10,7 @@ pub fn build_service(service: Service, kind: BuildKind) {
     }
 }
 
-fn build_docker(service: Service, conf: DockerBuildConfig) {
+fn build_docker(service: Service, _conf: DockerBuildConfig) {
     let mut cmd = std::process::Command::new("sudo")
         .args([
             "docker",
@@ -31,7 +28,7 @@ fn build_docker(service: Service, conf: DockerBuildConfig) {
     dbg!(status);
 }
 
-fn build_script(service: Service, conf: ScriptBuildConfig) {
+fn build_script(_service: Service, _conf: ScriptBuildConfig) {
     todo!()
 }
 

@@ -1,10 +1,10 @@
+use crate::services::actions::{
+    repo_list::repo_list,
+    service::{BuildKind, CargoBuildConfig, DockerBuildConfig, Service},
+};
 use std::{
     env,
     process::{Command, Stdio},
-};
-
-use crate::actions::repo_list::{
-    repo_list, BuildKind, CargoBuildConfig, DockerBuildConfig, Service,
 };
 
 pub fn build_all() {

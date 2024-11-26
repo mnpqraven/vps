@@ -1,4 +1,4 @@
-use crate::actions::repo_list::{DeploymentKind, Service};
+use super::{DeploymentKind, Service};
 
 pub fn deploy_service(service: Service, kind: DeploymentKind) {
     match kind {
