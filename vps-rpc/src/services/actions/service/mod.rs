@@ -18,10 +18,10 @@ pub mod service {
 
 pub mod types {
     pub mod build {
-        tonic::include_proto!("build");
+        tonic::include_proto!("types.build");
     }
     pub mod deployment {
-        tonic::include_proto!("deployment");
+        tonic::include_proto!("types.deployment");
     }
 }
 

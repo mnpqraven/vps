@@ -1,5 +1,4 @@
-use super::Service;
-use crate::types::DeploymentKind;
+use super::{types::deployment::DeploymentKind, Service};
 
 pub fn deploy_service(service: Service, kind: DeploymentKind) {
     match kind {
