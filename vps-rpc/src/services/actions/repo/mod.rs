@@ -1,50 +1,54 @@
+use crate::rpc::service::{
+    repo_action_server::RepoAction, BuildRequest, BuildResponse, RepoListResponse,
+};
+use build::handle_build;
+use tonic::{Request, Response, Status};
+
 use super::service::repo_list;
-use crate::utils::args::{RepoBuildTarget, RepoCommands};
-use build::build_all;
-use clone::clone_all;
-use pull::pull_single;
-use std::collections::HashSet;
 
 pub mod build;
 pub mod clone;
 pub mod pull;
 
-pub fn handle_repo_arg(arg: &RepoCommands) {
-    let list = repo_list();
-    match arg {
-        RepoCommands::List => {
-            let list = list
-                .iter()
-                .map(|e| e.service_name.to_owned())
-                .collect::<Vec<String>>();
-            dbg!(list);
-        }
-        RepoCommands::Clone => clone_all(),
-        RepoCommands::Pull => {
-            // TODO: unique urls
-            let unique_paths: Vec<String> = list
-                .into_iter()
-                .map(|e| e.relative_root)
-                .collect::<HashSet<_>>()
-                .into_iter()
-                .collect();
-            for path in unique_paths {
-                pull_single(&path);
-            }
-            println!("Pulling done");
-        }
-        RepoCommands::Build(e) => handle_build(e),
-    }
-}
+#[derive(Debug, Default)]
+pub struct RepoRpc {}
 
-fn handle_build(args: &RepoBuildTarget) {
-    println!("build_all (WIP)");
-    dbg!(args);
-    match args {
-        RepoBuildTarget::All => build_all(),
-        RepoBuildTarget::Bins { bins } => {
-            // TODO: check existence
-            println!("building {} service(s): {}", bins.len(), bins.join(", "));
+#[tonic::async_trait]
+impl RepoAction for RepoRpc {
+    async fn list(&self, _: Request<()>) -> Result<Response<RepoListResponse>, Status> {
+        let services = repo_list();
+        Ok(Response::new(RepoListResponse { repos: services }))
+    }
+
+    async fn build(&self, req: Request<BuildRequest>) -> Result<Response<BuildResponse>, Status> {
+        let req = req.into_inner();
+
+        let services = repo_list();
+        if req.service_names.is_empty() {
+            println!("build all (WIP");
+            for service in services {
+                handle_build(&service);
+            }
+
+            return Ok(Response::new(BuildResponse {
+                status: "WIP".to_string(),
+            }));
         }
+
+        for maybe_service in &req.service_names {
+            let find = services.iter().find(|e| e.service_name == *maybe_service);
+            if find.is_none() {
+                panic!("service not found")
+            }
+        }
+
+        services
+            .iter()
+            .filter(|e| req.service_names.contains(&e.service_name))
+            .for_each(handle_build);
+
+        Ok(Response::new(BuildResponse {
+            status: "WIP".to_string(),
+        }))
     }
 }

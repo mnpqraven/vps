@@ -1,17 +1,32 @@
-use crate::services::actions::service::{repo_list, BuildKind, Service};
+use crate::{
+    rpc::{service::Service, types::build::BuildKind},
+    services::actions::service::repo_list,
+};
 use std::{
     env,
     process::{Command, Stdio},
 };
 
+pub(super) fn handle_build(service: &Service) {
+    match service.build_config.as_ref().map(|e| e.kind()) {
+        Some(BuildKind::Cargo) => build_cargo(service),
+        Some(BuildKind::Docker) => build_docker(service),
+        Some(BuildKind::Script) => build_script(service),
+        None => {
+            println!("Build config not specified, nothing will be built");
+        }
+    }
+}
+
 pub fn build_all() {
     println!("building all services");
     let list = repo_list();
     for service in list {
-        match &service.build_config {
-            BuildKind::Script => {}
-            BuildKind::Docker => build_docker(&service),
-            BuildKind::Cargo => build_cargo(&service),
+        match &service.build_config.as_ref().map(|e| e.kind()) {
+            Some(BuildKind::Script) => {}
+            Some(BuildKind::Docker) => build_docker(&service),
+            Some(BuildKind::Cargo) => build_cargo(&service),
+            _ => {}
         }
     }
 }
@@ -27,7 +42,17 @@ fn build_cargo(service: &Service) {
 
     // either "build" or "build --bin [name]"
     let mut args = vec!["build"];
-    if let Some(bin_name) = &service.build_config.unwrap().bin_name {
+    if let Some(bin_name) = &service
+        .build_config
+        .as_ref()
+        // TODO: unwrap
+        .unwrap()
+        .cargo_config
+        .as_ref()
+        // TODO: unwrap
+        .unwrap()
+        .bin_name
+    {
         args.push("--bin");
         args.push(bin_name.as_str());
     }
@@ -50,10 +75,14 @@ fn build_docker(service: &Service) {
     // cd
     let _ = env::set_current_dir(absolute_path);
 
-    let args = match config.is_compose {
-        true => vec!["docker", "compose", "build", "--no-cache"],
+    let args = match service
+        .build_config
+        .as_ref()
+        .and_then(|e| e.docker_config.map(|f| f.is_compose))
+    {
+        Some(true) => vec!["docker", "compose", "build", "--no-cache"],
         // TODO: test
-        false => vec!["docker", "build"],
+        _ => vec!["docker", "build"],
     };
     let mut cmd = Command::new("sudo")
         .args(args.as_slice())
@@ -66,3 +95,5 @@ fn build_docker(service: &Service) {
     cmd.wait().unwrap();
     let _ = env::set_current_dir(default_pwd);
 }
+
+fn build_script(_service: &Service) {}

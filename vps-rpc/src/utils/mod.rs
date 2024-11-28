@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fs::File, io::Read};
 
-pub mod args;
-
 /// current Config.toml shape
 /// [general]
 /// home = "./"

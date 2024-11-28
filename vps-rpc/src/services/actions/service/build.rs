@@ -1,4 +1,4 @@
-use super::{types::build::BuildKind, Service};
+use crate::rpc::{service::Service, types::build::BuildKind};
 use std::process::Stdio;
 
 /// builds a service
@@ -24,7 +24,7 @@ fn build_docker(service: Service) {
         .spawn()
         .expect("compose build error, correct service name?");
 
-    let status = cmd.wait();
+    let status = cmd.wait().unwrap();
     dbg!(status);
 }
 
@@ -37,8 +37,7 @@ fn build_cargo(service: Service) {
 
     if let Some(bin_name) = service
         .build_config
-        .map(|e| e.cargo_config.map(|f| f.bin_name))
-        .flatten()
+        .and_then(|e| e.cargo_config.map(|f| f.bin_name))
         .flatten()
     {
         let mut bin_arg: Vec<String> = ["--bin", &bin_name].iter().map(|e| e.to_string()).collect();
@@ -52,7 +51,7 @@ fn build_cargo(service: Service) {
         .spawn()
         .expect("cargo build error, correct bin name?");
 
-    let status = cmd.wait();
+    let status = cmd.wait().unwrap();
     dbg!(status);
     println!("Service {} built", service.service_name);
 }

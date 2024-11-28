@@ -2,7 +2,7 @@ use greeter_server::Greeter;
 use tonic::{Request, Response, Status};
 
 tonic::include_proto!("helloworld");
-pub(crate) const FILE_DESCRIPTOR_SET: &[u8] =
+pub const HELLO_DESCRIPTOR_SET: &[u8] =
     tonic::include_file_descriptor_set!("helloworld_descriptor");
 
 #[derive(Debug, Default)]

@@ -273,6 +273,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
+name = "data-shapes"
+version = "1.2.3"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1383,8 +1390,12 @@ name = "vps-do"
 version = "1.2.3"
 dependencies = [
  "clap",
+ "data-shapes",
  "serde",
+ "tokio",
  "toml",
+ "tonic",
+ "vps-rpc",
 ]
 
 [[package]]
@@ -1392,6 +1403,7 @@ name = "vps-rpc"
 version = "1.2.3"
 dependencies = [
  "clap",
+ "data-shapes",
  "prost",
  "serde",
  "tokio",

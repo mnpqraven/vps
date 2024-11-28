@@ -1,45 +1,30 @@
-use crate::utils::{args::ServiceCommands, read_config_toml};
-use list::list_running_service;
-use service::{service_action_server::ServiceAction, Service, ServiceListResponse};
-use std::path::Path;
-use tonic::{Request, Response, Status};
-use types::{
+use crate::rpc::service::{service_action_server::ServiceAction, Service, ServiceListResponse};
+use crate::rpc::types::{
     build::{BuildConfig, BuildKind, CargoBuildConfig, DockerBuildConfig},
     deployment::DeploymentKind,
 };
+use crate::utils::read_config_toml;
+use data_shapes::ServiceCommands;
+use list::list_running_service;
+use std::path::Path;
+use tonic::{Request, Response, Status};
 
 pub mod build;
 pub mod deploy;
 pub mod list;
 
-pub mod service {
-    tonic::include_proto!("service");
-}
-
-pub mod types {
-    pub mod build {
-        tonic::include_proto!("types.build");
-    }
-    pub mod deployment {
-        tonic::include_proto!("types.deployment");
-    }
-}
-
-pub(crate) const SERVICE_DESCRIPTOR_SET: &[u8] =
-    tonic::include_file_descriptor_set!("service_descriptor");
-
 #[derive(Debug, Default)]
-struct Sv {}
+pub struct ServiceRpc {}
 
 #[tonic::async_trait]
-impl ServiceAction for Sv {
+impl ServiceAction for ServiceRpc {
     async fn list(&self, _: Request<()>) -> Result<Response<ServiceListResponse>, Status> {
         let services = repo_list();
         Ok(Response::new(ServiceListResponse { services }))
     }
 }
 
-impl service::Service {
+impl Service {
     pub fn absolute_path(&self) -> String {
         let conf = read_config_toml().unwrap();
         let true_path = Path::new(&conf.general.home).join(self.relative_root.clone());

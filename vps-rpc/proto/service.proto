@@ -5,18 +5,12 @@ import "types/build.proto";
 import "types/deployment.proto";
 
 service ServiceAction {
-  // rpc Build (Foo) returns (Service);
   // rpc Deploy (Foo) returns (Service);
-  rpc List (google.protobuf.Empty) returns (ServiceListResponse);
+  rpc List(google.protobuf.Empty) returns (ServiceListResponse);
 }
 
-message Foo {
-  string bar = 1;
-}
 
-message ServiceListResponse {
-  repeated Service services = 1;
-}
+message ServiceListResponse { repeated Service services = 1; }
 
 message Service {
   string service_name = 1;

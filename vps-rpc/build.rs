@@ -9,10 +9,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .file_descriptor_set_path(out_dir.join("helloworld_descriptor.bin"))
         .file_descriptor_set_path(out_dir.join("service_descriptor.bin"))
+        .file_descriptor_set_path(out_dir.join("repo_descriptor.bin"))
         .compile_protos(
             &[
                 "proto/helloworld.proto",
                 "proto/service.proto",
+                "proto/repo.proto",
                 "proto/types/build.proto",
                 "proto/types/deployment.proto",
             ],
