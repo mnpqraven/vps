@@ -1,8 +1,8 @@
 syntax = "proto3";
 package service;
 import "google/protobuf/empty.proto";
-import "types/build.proto";
 import "types/deployment.proto";
+import "types/build.proto";
 
 service ServiceAction {
   // rpc Deploy (Foo) returns (Service);

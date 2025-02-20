@@ -13,7 +13,7 @@ message CargoBuildConfig {
 }
 
 message ScriptBuildConfig {
-
+  optional string bin_name = 1;
 }
 
 message DockerBuildConfig {
