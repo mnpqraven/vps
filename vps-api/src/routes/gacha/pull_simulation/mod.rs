@@ -3,12 +3,10 @@
 pub mod types;
 
 use crate::handler::error::ApiError;
-use axum::Json;
+use axum::{extract::rejection::JsonRejection, Json};
+use tracing::error;
 use std::collections::HashMap;
-use types::{
-    Banner, BannerIternal, BannerType, ProbabilityRatePayload, ProbabilityRateResponse, ReducedSim,
-    Sim,
-};
+use types::{Banner, ProbabilityRatePayload, ProbabilityRateResponse, ReducedSim, Sim};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 /// Estimate gacha pull
@@ -21,26 +19,30 @@ use utoipa_axum::{router::OpenApiRouter, routes};
     )
 )]
 async fn handle(
-    Json(payload): Json<ProbabilityRatePayload>,
+    rpayload: Result<Json<ProbabilityRatePayload>, JsonRejection>,
 ) -> Result<Json<ProbabilityRateResponse>, ApiError> {
-    let banner = match payload.banner {
-        BannerType::Ssr => Banner::char_ssr().to_internal(pity_rate(0.6, 74)),
-        BannerType::Sr => Banner::char_sr().to_internal(pity_rate(5.1, 9)),
-        BannerType::Lc => Banner::basic_weapon().to_internal(pity_rate(0.7, 63)),
-    };
+    if rpayload.is_err() {
+        let err = rpayload.unwrap_err();
+        error!("{}", err.body_text());
+        return Err(ApiError::ParseData(err.body_text()));
+    }
+    // safe unwrap
+    let Json(payload) = rpayload.unwrap();
 
+    let cloned_banner = payload.banner.clone();
     let calcs = calc_sims_regular(
         payload.current_eidolon,
-        payload.pity,
+        payload.pity_current_count,
         payload.pulls,
         payload.next_guaranteed,
         // TODO: not hardcode
         0,
-        banner,
+        payload.banner,
     );
     let master_prob_rate = ProbabilityRateResponse {
         roll_budget: payload.pulls,
         data: to_accumulated_rates(&calcs),
+        banner: cloned_banner,
     };
 
     Ok(Json(master_prob_rate))
@@ -86,21 +88,13 @@ fn to_accumulated_rates(data: &[Vec<ReducedSim>]) -> Vec<Vec<ReducedSim>> {
         .collect()
 }
 
-fn pity_rate(base_rate: f64, pity_start: i32) -> Box<dyn Fn(i32) -> f64> {
-    let func = move |pity: i32| match pity < pity_start {
-        true => base_rate,
-        false => base_rate + base_rate * 10.0 * (pity - pity_start + 1) as f64,
-    };
-    Box::new(func)
-}
-
 fn calc_sims_regular(
     current_eidolon: i32,
     pity: i32,
     pulls: i32,
     guaranteed: bool,
     guaranteed_pity: i32,
-    banner: BannerIternal,
+    banner: Banner,
 ) -> Vec<Vec<ReducedSim>> {
     calc_sims_int(
         Sim {
@@ -115,7 +109,7 @@ fn calc_sims_regular(
     )
 }
 
-fn calc_sims_int(starter_sim: Sim, pulls: i32, banner: BannerIternal) -> Vec<Vec<ReducedSim>> {
+fn calc_sims_int(starter_sim: Sim, pulls: i32, banner: Banner) -> Vec<Vec<ReducedSim>> {
     let mut smal_sims = vec![starter_sim];
     let sims = calc_sims_exact(&mut smal_sims, pulls, &banner);
 
@@ -145,7 +139,7 @@ fn sim_to_reduced(sim: &[Sim]) -> Vec<ReducedSim> {
     reduced_sim.values().cloned().collect::<Vec<ReducedSim>>()
 }
 
-fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> Vec<Vec<Sim>> {
+fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &Banner) -> Vec<Vec<Sim>> {
     let mut all_sims: Vec<Vec<Sim>> = vec![sims.clone()];
     for _ in 0..pulls {
         let mut new_sims: HashMap<i32, Sim> = HashMap::new();
@@ -177,7 +171,7 @@ fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> V
             }
             let current_pity = sim.pity + 1;
 
-            let mut rate = (banner.rate)(current_pity) / 100.0;
+            let mut rate = banner.rate_fn()(current_pity) / 100.0;
             rate = rate.clamp(0.0, 1.0);
             let banner_rate: f64 = match banner.enpitomized_pity {
                 Some(x) if sim.guaranteed_pity >= x - 1 => 1.0,
