@@ -1,27 +1,28 @@
-// hutao bot's calc transpiled to rust
-// https://gist.github.com/Tibowl/7ae7395e000843ad4882030b9c4703b5
+/// hutao bot's calc transpiled to rust
+/// https://gist.github.com/Tibowl/7ae7395e000843ad4882030b9c4703b5
+pub mod types;
 
 use crate::handler::error::ApiError;
-use axum::{extract::rejection::JsonRejection, Json};
+use axum::Json;
 use std::collections::HashMap;
-use tracing::error;
 use types::{
     Banner, BannerIternal, BannerType, ProbabilityRatePayload, ProbabilityRateResponse, ReducedSim,
     Sim,
 };
+use utoipa_axum::{router::OpenApiRouter, routes};
 
-pub mod types;
-
-pub async fn handle(
-    rpayload: Result<Json<ProbabilityRatePayload>, JsonRejection>,
+/// Estimate gacha pull
+#[utoipa::path(
+    post,
+    path = "/api/gacha/pull_simulation",
+    request_body = ProbabilityRatePayload,
+    responses(
+        (status = OK, description = "Success", body = ProbabilityRateResponse)
+    )
+)]
+async fn handle(
+    Json(payload): Json<ProbabilityRatePayload>,
 ) -> Result<Json<ProbabilityRateResponse>, ApiError> {
-    if rpayload.is_err() {
-        let err = rpayload.unwrap_err();
-        error!("{}", err.body_text());
-        return Err(ApiError::ParseData(err.body_text()));
-    }
-    // safe unwrap
-    let Json(payload) = rpayload.unwrap();
     let banner = match payload.banner {
         BannerType::Ssr => Banner::char_ssr().to_internal(pity_rate(0.6, 74)),
         BannerType::Sr => Banner::char_sr().to_internal(pity_rate(5.1, 9)),
@@ -43,6 +44,10 @@ pub async fn handle(
     };
 
     Ok(Json(master_prob_rate))
+}
+
+pub fn router() -> OpenApiRouter {
+    OpenApiRouter::new().routes(routes!(handle))
 }
 
 fn to_accumulated_rates(data: &[Vec<ReducedSim>]) -> Vec<Vec<ReducedSim>> {
@@ -174,7 +179,7 @@ fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> V
 
             let mut rate = (banner.rate)(current_pity) / 100.0;
             rate = rate.clamp(0.0, 1.0);
-            let banner_rate: f64 = match banner.guaranteed_pity {
+            let banner_rate: f64 = match banner.enpitomized_pity {
                 Some(x) if sim.guaranteed_pity >= x - 1 => 1.0,
                 None if sim.guaranteed => 1.0,
                 _ => banner.banner,
@@ -204,8 +209,8 @@ fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> V
 
             // Got banner item but not wanted (eg. wrong rate up 4* char/5* char)
             if banner.guaranteed < 1.0 {
-                if banner.guaranteed_pity.is_some()
-                    && sim.guaranteed_pity >= banner.guaranteed_pity.unwrap() - 1
+                if banner.enpitomized_pity.is_some()
+                    && sim.guaranteed_pity >= banner.enpitomized_pity.unwrap() - 1
                 {
                     // epitomized path
                     // https://www.hoyolab.com/article/533196
@@ -218,7 +223,7 @@ fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> V
                     };
                     add_or_merge(&not_wanted);
                 } else {
-                    let guaranteed_pity = match banner.guaranteed_pity {
+                    let guaranteed_pity = match banner.enpitomized_pity {
                         Some(_) => sim.guaranteed_pity + 1,
                         None => 0,
                     };
@@ -235,7 +240,7 @@ fn calc_sims_exact(sims: &mut Vec<Sim>, pulls: i32, banner: &BannerIternal) -> V
 
             // Failed banner items (eg. 4* char rate ups vs regular 4*)
             if banner_rate < 1.0 {
-                let guaranteed_pity = match banner.guaranteed_pity {
+                let guaranteed_pity = match banner.enpitomized_pity {
                     Some(_) => sim.guaranteed_pity + 1,
                     None => 0,
                 };

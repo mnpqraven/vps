@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Debug, Clone)]
 pub struct Sim {
@@ -8,25 +9,34 @@ pub struct Sim {
     pub guaranteed: bool,
     pub guaranteed_pity: i32,
 }
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 pub struct ReducedSim {
     pub eidolon: i32,
     pub rate: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema, IntoParams)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct ProbabilityRatePayload {
+    /// current dupe count
     pub current_eidolon: i32,
+    /// current pity count, hitting the targeted pull sets this back to 00
     pub pity: i32,
+    /// total amount of pulls in possession
     pub pulls: i32,
+    /// if your next targeted pull is really the correct target (you already
+    /// failed pity)
     pub next_guaranteed: bool,
-    pub enpitomized_pity: Option<i32>,
+    /// DEV
+    #[param(ignore)]
+    #[serde(skip)]
+    pub _enpitomized_pity: Option<i32>,
+    /// banner type that has some built in parameters
     pub banner: BannerType,
 }
 
 // master struct
-#[derive(Debug, Serialize, Clone, Default)]
+#[derive(Debug, Serialize, Clone, Default, ToSchema)]
 pub struct ProbabilityRateResponse {
     pub roll_budget: i32,
     pub data: Vec<Vec<ReducedSim>>,
@@ -36,10 +46,17 @@ pub struct ProbabilityRateResponse {
 #[serde(rename_all = "camelCase")]
 pub struct Banner {
     pub banner_name: String,
+    /// base pity rate. hitting this rate ends the calc, failing this rate
+    /// resets the calc and enables `guaranteed_pity`
+    /// E.g:
+    /// 0.5 for hoyo char, 0.75 for hoyo weapons
+    /// 1.0 is a guaranteed, you get what you want
     pub banner: f64,
     pub rarity: u32,
+    /// the rate
     pub guaranteed: f64,
-    pub guaranteed_pity: Option<i32>,
+    /// https://www.hoyolab.com/article/533196
+    pub enpitomized_pity: Option<i32>,
     pub const_prefix: String,
     pub const_shorthand: char,
     pub min_const: i32,
@@ -48,7 +65,7 @@ pub struct Banner {
     pub banner_type: BannerType,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 #[repr(i32)]
 pub enum BannerType {
     #[serde(rename = "SSR")]
@@ -66,7 +83,7 @@ impl Banner {
             banner: 0.5,
             rarity: 5,
             guaranteed: 1.0,
-            guaranteed_pity: None,
+            enpitomized_pity: None,
             min_const: -1,
             max_const: 6,
             max_pity: 90,
@@ -81,7 +98,7 @@ impl Banner {
             banner: 0.5,
             rarity: 4,
             guaranteed: 0.333333333,
-            guaranteed_pity: None,
+            enpitomized_pity: None,
             min_const: -1,
             max_const: 6,
             max_pity: 10,
@@ -96,7 +113,7 @@ impl Banner {
             banner: 0.75,
             rarity: 5,
             guaranteed: 1.0,
-            guaranteed_pity: None,
+            enpitomized_pity: None,
             min_const: -1,
             max_const: 4,
             max_pity: 80,
@@ -112,7 +129,7 @@ impl Banner {
             banner: 0.75,
             rarity: 5,
             guaranteed: 0.5,
-            guaranteed_pity: Some(3),
+            enpitomized_pity: Some(3),
             min_const: 0,
             max_const: 5,
             max_pity: 80,
@@ -127,7 +144,7 @@ impl Banner {
             banner_name: self.banner_name.to_owned(),
             banner: self.banner,
             guaranteed: self.guaranteed,
-            guaranteed_pity: self.guaranteed_pity,
+            enpitomized_pity: self.enpitomized_pity,
             min_const: self.min_const,
             max_const: self.max_const,
             max_pity: self.max_pity,
@@ -143,7 +160,7 @@ pub struct BannerIternal {
     pub banner: f64,
     pub guaranteed: f64,
     /// not yet implemented, genshin epitomized path ???
-    pub guaranteed_pity: Option<i32>,
+    pub enpitomized_pity: Option<i32>,
     pub min_const: i32,
     pub max_const: i32,
     /// pity count (90 for char, 80 lc)
