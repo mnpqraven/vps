@@ -4,20 +4,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+fn main() {
     let root_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let proto_dir = root_dir.join("proto");
-    let proto_files: Vec<PathBuf> = list_files(&proto_dir)
+    let files: Vec<PathBuf> = list_files(&proto_dir)
         .into_iter()
         .map(|file| file.strip_prefix(root_dir.clone()).unwrap().to_path_buf())
         .collect();
-
-    tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("descriptor.bin"))
-        .compile_protos(&proto_files, &["proto",])?;
-
-    Ok(())
+    dbg!(files);
 }
 
 fn list_files(path: &Path) -> Vec<PathBuf> {

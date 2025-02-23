@@ -1,4 +1,7 @@
-use axum::{routing::get, Router};
+pub mod routes;
+pub mod handler;
+use routes::app_router;
+use tracing::info;
 
 pub const API_ADDR: &str = "[::1]:4000";
 
@@ -6,22 +9,13 @@ pub const API_ADDR: &str = "[::1]:4000";
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    // build our application with a route
-    let app = Router::new()
-        // `GET /` goes to `root`
-        .route("/", get(root));
+    let app = app_router();
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(API_ADDR)
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(API_ADDR).await.unwrap();
+    info!("{} API SERVER UP", API_ADDR);
 
     axum::serve(listener, app).await?;
 
     Ok(())
-}
-
-// basic handler that responds with a static string
-async fn root() -> &'static str {
-    "Hello, World!"
 }

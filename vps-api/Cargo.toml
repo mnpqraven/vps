@@ -7,7 +7,10 @@ description.workspace = true
 documentation.workspace = true
 
 [dependencies]
+anyhow = "1.0.96"
 axum = "0.7.9"
 serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.139"
 tokio = { version = "1.41.1", features = ["full"] }
+tracing = "0.1.41"
 tracing-subscriber = "0.3.18"

@@ -1,0 +1,10 @@
+[package]
+name = "data-shapes"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive"] }
