@@ -3,7 +3,7 @@ pub mod handler;
 use routes::app_router;
 use tracing::info;
 
-pub const API_ADDR: &str = "[::1]:4000";
+pub const API_ADDR: &str = "127.0.0.1:4000";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
