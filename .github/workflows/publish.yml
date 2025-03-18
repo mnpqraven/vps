@@ -1,0 +1,19 @@
+name: pipeline
+on:
+  push:
+    branches:
+      - gh-action
+jobs:
+  deploy:
+    name: remote ssh build
+    runs-on: ubuntu-latest
+    steps:
+      uses: appleboy/ssh-action@v1
+      with:
+        username: ubuntu
+        host: ${{ secrets.HOST }}
+        key: ${{ secrets.SSH_KEY }}
+        script: "
+        cargo install --path vps-api
+        sudo systemctl restart vps-api
+        "
