@@ -4,16 +4,16 @@ on:
     branches:
       - gh-action
 jobs:
-  deploy:
-    name: remote ssh build
+  build:
+    name: remote ssh
     runs-on: ubuntu-latest
     steps:
-      uses: appleboy/ssh-action@v1
-      with:
-        username: ubuntu
-        host: ${{ secrets.HOST }}
-        key: ${{ secrets.SSH_KEY }}
-        script: "
-        cargo install --path vps-api
-        sudo systemctl restart vps-api
-        "
+      - name: build
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cargo install --path vps-api
+            sudo systemctl restart vps-api
