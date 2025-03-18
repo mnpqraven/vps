@@ -8,7 +8,7 @@ jobs:
     name: remote ssh
     runs-on: ubuntu-latest
     steps:
-      - name: build
+      - name: build api
         uses: appleboy/ssh-action@v1
         with:
           username: ubuntu
@@ -18,3 +18,13 @@ jobs:
             cd service_repos/vps
             /home/ubuntu/.cargo/bin/cargo install --path vps-api
             sudo systemctl restart vps-api.service
+      - name: build rpc
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd service_repos/vps
+            /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
+            sudo systemctl restart vps-rpc.service
