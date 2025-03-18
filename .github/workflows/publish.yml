@@ -15,7 +15,6 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            exec bash -l
             whoami
             pwd
             ls -la
