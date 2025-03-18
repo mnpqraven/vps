@@ -17,4 +17,4 @@ jobs:
           script: |
             whoami
             pwd
-            which cargo
+            ls -la
