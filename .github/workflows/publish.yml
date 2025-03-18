@@ -18,5 +18,5 @@ jobs:
             whoami
             pwd
             which cargo
-            cargo install --path vps-api
-            sudo systemctl restart vps-api
+            # cargo install --path vps-api
+            # sudo systemctl restart vps-api
