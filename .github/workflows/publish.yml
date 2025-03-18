@@ -15,5 +15,7 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            whoami
+            ip addr
             cargo install --path vps-api
             sudo systemctl restart vps-api
