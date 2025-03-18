@@ -15,8 +15,8 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            bash
+            exec bash -l
             whoami
             pwd
             ls -la
-            .cargo/bin/cargo
+            cargo
