@@ -3,7 +3,7 @@ use tonic::transport::Server;
 
 pub mod services;
 
-pub const RPC_ADDR: &str = "[::1]:4001";
+pub const RPC_ADDR: &str = "127.0.0.1:4001";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,6 +18,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(GreeterServer::new(MyGreeter::default()))
         .serve(RPC_ADDR.parse()?)
         .await?;
+
+    println!("gRPC server started at {}", RPC_ADDR);
 
     Ok(())
 }

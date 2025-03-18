@@ -16,6 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
+    println!("API server started at {}", API_ADDR);
+
     axum::serve(listener, app).await?;
 
     Ok(())
