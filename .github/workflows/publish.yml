@@ -19,4 +19,4 @@ jobs:
             whoami
             pwd
             ls -la
-            cargo
+            .cargo/bin/cargo
