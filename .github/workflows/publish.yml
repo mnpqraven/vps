@@ -15,6 +15,7 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            source /etc/profile
             whoami
             pwd
             ls -la
