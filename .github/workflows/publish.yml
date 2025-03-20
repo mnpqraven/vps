@@ -15,17 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: api-lint
     if: github.ref == 'refs/heads/main'
-    uses: appleboy/ssh-action@v1
-    with:
-      username: ubuntu
-      host: ${{ secrets.HOST }}
-      key: ${{ secrets.SSH_KEY }}
-      script: |
-        cd service_repos/vps
-        git pull --rebase
-        /home/ubuntu/.cargo/bin/cargo build --release --package vps-api
-        /home/ubuntu/.cargo/bin/cargo install --path vps-api
-        sudo systemctl restart vps-api.service
+    steps:
+      - uses: actions/checkout@v4
+      - name: ssh deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd service_repos/vps
+            git pull --rebase
+            /home/ubuntu/.cargo/bin/cargo build --release --package vps-api
+            /home/ubuntu/.cargo/bin/cargo install --path vps-api
+            sudo systemctl restart vps-api.service
   rpc-lint:
     runs-on: ubuntu-latest
     steps:
@@ -40,14 +43,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: rpc-lint
     if: github.ref == 'refs/heads/main'
-    uses: appleboy/ssh-action@v1
-    with:
-      username: ubuntu
-      host: ${{ secrets.HOST }}
-      key: ${{ secrets.SSH_KEY }}
-      script: |
-        cd service_repos/vps
-        git pull --rebase
-        /home/ubuntu/.cargo/bin/cargo build --release --package vps-rpc
-        /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
-        sudo systemctl restart vps-rpc.service
+    steps:
+      - uses: actions/checkout@v4
+      - name: ssh deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd service_repos/vps
+            git pull --rebase
+            /home/ubuntu/.cargo/bin/cargo build --release --package vps-rpc
+            /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
+            sudo systemctl restart vps-rpc.service
