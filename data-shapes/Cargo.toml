@@ -7,4 +7,4 @@ description.workspace = true
 documentation.workspace = true
 
 [dependencies]
-clap = { version = "4.5.20", features = ["derive"] }
+clap = { version = "4.5.32", features = ["derive"] }
