@@ -4,6 +4,7 @@ use services::{
     greeter::{greeter_server::GreeterServer, MyGreeter},
 };
 use tonic::transport::Server;
+use tracing::info;
 
 pub mod rpc;
 pub mod services;
@@ -19,8 +20,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_encoded_file_descriptor_set(DESCRIPTOR_SET)
         .build_v1alpha()?;
 
-    println!("spinning up gRPC server at {RPC_ADDR}");
-
     Server::builder()
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(MyGreeter::default()))
@@ -28,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .serve(RPC_ADDR.parse()?)
         .await?;
 
-    println!("gRPC server started at {}", RPC_ADDR);
+    info!("gRPC SERVER UP @ {RPC_ADDR}");
 
     Ok(())
 }
