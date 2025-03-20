@@ -5,7 +5,7 @@ members = ["vps-rpc", "vps-do", "vps-api", "data-shapes"]
 resolver = "2"
 
 [workspace.package]
-version = "1.2.3"
-authors = ["Nice Folks"]
-description = "A short description of my package"
-documentation = "https://example.com/bar"
+version = "0.1.0"
+authors = ["Othi <mnpq.raven@gmail.com>"]
+description = "VPS command tools"
+documentation = "https://github.com/mnpqraven/vps"

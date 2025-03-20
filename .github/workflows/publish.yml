@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd service_repos/vps
+            git pull --rebase
             /home/ubuntu/.cargo/bin/cargo install --path vps-api
             sudo systemctl restart vps-api.service
   rpc:
@@ -40,5 +41,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd service_repos/vps
+            git pull --rebase
             /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
             sudo systemctl restart vps-rpc.service

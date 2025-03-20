@@ -24,7 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(API_ADDR).await.unwrap();
-    info!("API SERVER UP @ {API_ADDR}");
+
+    info!("RUNNING API SERVER @ {API_ADDR}");
 
     axum::serve(listener, app_router).await?;
 

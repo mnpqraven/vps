@@ -16,9 +16,13 @@ const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
+
     let descriptor_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(DESCRIPTOR_SET)
         .build_v1alpha()?;
+
+    info!("RUNNING gRPC SERVER @ {RPC_ADDR}");
 
     Server::builder()
         .add_service(descriptor_service)
@@ -26,8 +30,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(ServiceActionServer::new(ServiceRpc::default()))
         .serve(RPC_ADDR.parse()?)
         .await?;
-
-    info!("gRPC SERVER UP @ {RPC_ADDR}");
 
     Ok(())
 }
