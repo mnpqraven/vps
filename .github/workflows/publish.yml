@@ -13,6 +13,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: lint
         run: cargo check --package vps-api
+      - name: test
+        run: cargo test --package vps-api
       - name: ssh deploy
         uses: appleboy/ssh-action@v1
         with:
@@ -22,6 +24,7 @@ jobs:
           script: |
             cd service_repos/vps
             git pull --rebase
+            /home/ubuntu/.cargo/bin/cargo build --release --package vps-api
             /home/ubuntu/.cargo/bin/cargo install --path vps-api
             sudo systemctl restart vps-api.service
   rpc:
@@ -33,6 +36,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: lint
         run: cargo check --package vps-rpc
+      - name: test
+        run: cargo test --package vps-rpc
       - name: ssh deploy
         uses: appleboy/ssh-action@v1
         with:
@@ -42,5 +47,6 @@ jobs:
           script: |
             cd service_repos/vps
             git pull --rebase
+            /home/ubuntu/.cargo/bin/cargo build --release --package vps-rpc
             /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
             sudo systemctl restart vps-rpc.service
