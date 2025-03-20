@@ -5,7 +5,7 @@ on:
       - gh-action
 jobs:
   api:
-    name: lint
+    name: api
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
             /home/ubuntu/.cargo/bin/cargo install --path vps-api
             sudo systemctl restart vps-api.service
   rpc:
-    name: lint
+    name: rpc
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
