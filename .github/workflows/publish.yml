@@ -10,17 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: lint
+      - name: lint api
         run: cargo check --package vps-api
+      - name: lint rpc
+        run: cargo check --package vps-rpc
   deploy:
     name: remote ssh
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: toolchain install
-        uses: dtolnay/rust-toolchain@stable
-      - name: lint
-        run: cargo check --package vps-api
       - name: deploy api
         uses: appleboy/ssh-action@v1
         with:
