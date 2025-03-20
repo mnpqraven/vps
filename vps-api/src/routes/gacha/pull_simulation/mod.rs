@@ -4,21 +4,20 @@ pub mod types;
 
 use crate::handler::error::ApiError;
 use axum::{extract::rejection::JsonRejection, Json};
-use tracing::error;
 use std::collections::HashMap;
+use tracing::error;
 use types::{Banner, ProbabilityRatePayload, ProbabilityRateResponse, ReducedSim, Sim};
-use utoipa_axum::{router::OpenApiRouter, routes};
 
 /// Estimate gacha pull
 #[utoipa::path(
     post,
-    path = "/api/gacha/pull_simulation",
+    path = "",
     request_body = ProbabilityRatePayload,
     responses(
         (status = OK, description = "Success", body = ProbabilityRateResponse)
     )
 )]
-async fn handle(
+pub(super) async fn pull_simulation(
     rpayload: Result<Json<ProbabilityRatePayload>, JsonRejection>,
 ) -> Result<Json<ProbabilityRateResponse>, ApiError> {
     if rpayload.is_err() {
@@ -46,10 +45,6 @@ async fn handle(
     };
 
     Ok(Json(master_prob_rate))
-}
-
-pub fn router() -> OpenApiRouter {
-    OpenApiRouter::new().routes(routes!(handle))
 }
 
 fn to_accumulated_rates(data: &[Vec<ReducedSim>]) -> Vec<Vec<ReducedSim>> {

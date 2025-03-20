@@ -1915,6 +1915,7 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "utoipa-swagger-ui",
+ "vps-rpc",
 ]
 
 [[package]]

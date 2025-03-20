@@ -5,12 +5,11 @@ use services::{
 };
 use tonic::transport::Server;
 use tracing::info;
+use vps_rpc::RPC_ADDR;
 
 pub mod rpc;
 pub mod services;
 pub mod utils;
-
-pub const RPC_ADDR: &str = "127.0.0.1:4001";
 
 const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 

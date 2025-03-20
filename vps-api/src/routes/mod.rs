@@ -1,19 +1,20 @@
 pub mod gacha;
 pub mod health;
+pub mod rpcgreet;
 
 use axum::routing::get;
-use gacha::pull_simulation;
 use utoipa_axum::router::OpenApiRouter;
 
 pub fn app_router() -> OpenApiRouter {
     OpenApiRouter::new()
         // `GET /` goes to `root`
         .route("/", get(root).post(root))
-        .merge(health::router())
-        .merge(pull_simulation::router())
+        .nest("/api/health", health::router())
+        .nest("/api/rpcgreet", rpcgreet::router())
+        .nest("/api/gacha/pull_simulation", gacha::router())
 }
 
 // basic handler that responds with a static string
 async fn root() -> &'static str {
-    "Hello, World!"
+    "Go to /swagger for docs"
 }

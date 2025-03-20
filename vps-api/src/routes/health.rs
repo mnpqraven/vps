@@ -2,8 +2,8 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 /// Get health of the API.
 #[utoipa::path(
-    method(get, head),
-    path = "/api/health",
+    method(get),
+    path = "",
     responses(
         (status = OK, description = "Success", body = str, content_type = "text/plain")
     )

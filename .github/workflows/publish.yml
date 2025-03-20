@@ -1,11 +1,7 @@
 name: build and deploy
-on:
-  push:
-    branches:
-      - main
+on: push
 jobs:
-  api:
-    name: api
+  api-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,20 +11,22 @@ jobs:
         run: cargo check --package vps-api
       - name: test
         run: cargo test --package vps-api
-      - name: ssh deploy
-        uses: appleboy/ssh-action@v1
-        with:
-          username: ubuntu
-          host: ${{ secrets.HOST }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd service_repos/vps
-            git pull --rebase
-            /home/ubuntu/.cargo/bin/cargo build --release --package vps-api
-            /home/ubuntu/.cargo/bin/cargo install --path vps-api
-            sudo systemctl restart vps-api.service
-  rpc:
-    name: rpc
+  api-deploy:
+    runs-on: ubuntu-latest
+    needs: api-lint
+    if: github.ref == 'refs/heads/main'
+    uses: appleboy/ssh-action@v1
+    with:
+      username: ubuntu
+      host: ${{ secrets.HOST }}
+      key: ${{ secrets.SSH_KEY }}
+      script: |
+        cd service_repos/vps
+        git pull --rebase
+        /home/ubuntu/.cargo/bin/cargo build --release --package vps-api
+        /home/ubuntu/.cargo/bin/cargo install --path vps-api
+        sudo systemctl restart vps-api.service
+  rpc-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,15 +36,18 @@ jobs:
         run: cargo check --package vps-rpc
       - name: test
         run: cargo test --package vps-rpc
-      - name: ssh deploy
-        uses: appleboy/ssh-action@v1
-        with:
-          username: ubuntu
-          host: ${{ secrets.HOST }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd service_repos/vps
-            git pull --rebase
-            /home/ubuntu/.cargo/bin/cargo build --release --package vps-rpc
-            /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
-            sudo systemctl restart vps-rpc.service
+  rpc-deploy:
+    runs-on: ubuntu-latest
+    needs: rpc-lint
+    if: github.ref == 'refs/heads/main'
+    uses: appleboy/ssh-action@v1
+    with:
+      username: ubuntu
+      host: ${{ secrets.HOST }}
+      key: ${{ secrets.SSH_KEY }}
+      script: |
+        cd service_repos/vps
+        git pull --rebase
+        /home/ubuntu/.cargo/bin/cargo build --release --package vps-rpc
+        /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
+        sudo systemctl restart vps-rpc.service
