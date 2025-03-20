@@ -1,0 +1,44 @@
+name: deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  api:
+    name: api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-protoc@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: lint
+        run: cargo check --package vps-api
+      - name: ssh deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd service_repos/vps
+            /home/ubuntu/.cargo/bin/cargo install --path vps-api
+            sudo systemctl restart vps-api.service
+  rpc:
+    name: rpc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-protoc@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: lint
+        run: cargo check --package vps-rpc
+      - name: ssh deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd service_repos/vps
+            /home/ubuntu/.cargo/bin/cargo install --path vps-rpc
+            sudo systemctl restart vps-rpc.service

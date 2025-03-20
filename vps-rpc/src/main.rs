@@ -9,7 +9,7 @@ pub mod rpc;
 pub mod services;
 pub mod utils;
 
-pub const RPC_ADDR: &str = "[::1]:4001";
+pub const RPC_ADDR: &str = "127.0.0.1:4001";
 
 const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
@@ -27,6 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(ServiceActionServer::new(ServiceRpc::default()))
         .serve(RPC_ADDR.parse()?)
         .await?;
+
+    println!("gRPC server started at {}", RPC_ADDR);
 
     Ok(())
 }
