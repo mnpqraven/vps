@@ -1,15 +1,20 @@
-use actions::{repo::handle_repo_arg, service::handle_service_arg};
 use clap::Parser;
-use utils::args::{ActionCategory, CliArgs};
+use cli::repo::handle_repo_arg;
+use data_shapes::{ActionCategory, CliArgs};
 
-mod actions;
+mod cli;
 mod utils;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = CliArgs::parse();
 
     match &cli.command {
-        ActionCategory::Repo(repo_arg) => handle_repo_arg(repo_arg),
-        ActionCategory::Service(service_arg) => handle_service_arg(service_arg),
+        ActionCategory::Repo(repo_arg) => handle_repo_arg(repo_arg).await,
+        ActionCategory::Service(service_arg) => {
+            // handle_service_arg(service_arg)
+        }
     }
+
+    Ok(())
 }

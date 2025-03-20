@@ -1,0 +1,22 @@
+syntax = "proto3";
+package service;
+import "google/protobuf/empty.proto";
+import "types/deployment.proto";
+import "types/build.proto";
+
+service ServiceAction {
+  // rpc Deploy (Foo) returns (Service);
+  rpc List(google.protobuf.Empty) returns (ServiceListResponse);
+}
+
+
+message ServiceListResponse { repeated Service services = 1; }
+
+message Service {
+  string service_name = 1;
+  string url = 2;
+  optional string _path = 3;
+  optional types.deployment.DeploymentKind deployment = 4;
+  types.build.BuildConfig build_config = 5;
+  string relative_root = 6;
+}

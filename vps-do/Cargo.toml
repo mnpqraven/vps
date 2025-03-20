@@ -9,4 +9,8 @@ documentation.workspace = true
 [dependencies]
 clap = { version = "4.5.20", features = ["derive"] }
 serde = { version = "1.0.215", features = ["derive"] }
+tokio = { version = "1.41.0", features = ["full"] }
 toml = "0.8.19"
+tonic = "0.12.3"
+vps-rpc = { path = "../vps-rpc" }
+data-shapes = { path = "../data-shapes" }

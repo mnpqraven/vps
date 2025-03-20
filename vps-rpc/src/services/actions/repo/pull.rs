@@ -1,9 +1,8 @@
+use crate::utils::read_config_toml;
 use std::{
     path::Path,
     process::{Command, Stdio},
 };
-
-use crate::utils::config_parse::read_config_toml;
 
 /// pull a service repo in path
 pub fn pull_single(path: &str) {

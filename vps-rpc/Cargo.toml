@@ -11,6 +11,18 @@ prost = "0.13.3"
 tokio = { version = "1.41.0", features = ["full"] }
 tonic = "0.12.3"
 tonic-reflection = "0.12.3"
+clap = { version = "4.5.20", features = ["derive"] }
+serde = { version = "1.0.215", features = ["derive"] }
+toml = "0.8.19"
+data-shapes = { path = "../data-shapes" }
 
 [build-dependencies]
 tonic-build = "0.12.3"
+
+[[bin]]
+name = "vps-rpc"
+path = "src/main.rs"
+
+[[bin]]
+name = "vps-rpc-tonic-debug"
+path = "src/runnables/tonic_build_debug.rs"

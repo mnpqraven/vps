@@ -1,4 +1,4 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -28,7 +28,7 @@ pub enum RepoCommands {
 #[derive(Subcommand, Debug)]
 pub enum RepoBuildTarget {
     All,
-    Bins{ bins: Vec<String> },
+    Bins { bins: Vec<String> },
 }
 
 #[derive(Subcommand, Debug)]
