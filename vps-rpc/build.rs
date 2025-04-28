@@ -14,8 +14,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     tonic_build::configure()
+        .protoc_arg("--experimental_allow_proto3_optional")
         .file_descriptor_set_path(out_dir.join("descriptor.bin"))
-        .compile_protos(&proto_files, &["proto",])?;
+        .compile_protos(&proto_files, &["proto"])?;
 
     Ok(())
 }
