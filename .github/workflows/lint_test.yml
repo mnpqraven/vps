@@ -6,7 +6,7 @@ on:
       - '!master'
   pull_request:
 jobs:
-  api-lint:
+  api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +16,7 @@ jobs:
         run: cargo check --package vps-api
       - name: test
         run: cargo test --package vps-api
-  rpc-lint:
+  rpc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
