@@ -10,6 +10,7 @@
     {
       nixpkgs,
       flake-utils,
+      self,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
@@ -18,15 +19,32 @@
         pkgs = (import nixpkgs) {
           inherit system;
         };
+        rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
+          PORT=5005
+           ${pkgs.grpcui}/bin/grpcui -plaintext localhost:$PORT
+        '';
       in
       {
+        packages = {
+          inherit rpcWeb;
+        };
+
+        apps.rpcWeb = {
+          type = "app";
+          program = "${self.packages.${system}.rpcWeb}/bin/rpcWeb";
+        };
 
         # nix develop
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
-            rustc
-            cargo
+            # TODO: fix autocomplete error
+            # rustc
+            # cargo
+            rustup
             bacon
+            protobuf
+            grpcui
+            grpcurl
           ];
         };
       }
