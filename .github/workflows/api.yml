@@ -48,6 +48,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           file: vps-api/Dockerfile
       
       # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
@@ -65,11 +67,12 @@ jobs:
           host: ${{ secrets.HOST }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            NAME="vps-api"
+            GHCR="${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}"
+            OPT="--name vps-api -p 5000:5000 -d"
+
             sudo docker pull ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
             sudo docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}} vps-api
-            NAME=vps-api
-            GHCR=${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
-            OPT='--name vps-api -p 5000:5000 -d'
 
             CONTAINER_ID="$(sudo docker ps --filter name="$NAME" -q)"
 
