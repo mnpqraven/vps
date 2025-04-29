@@ -70,17 +70,17 @@ jobs:
             NAME="vps-rpc"
             GHCR="${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}"
 
-            sudo docker pull "$GHCR"
-            sudo docker tag "$GHCR" vps-rpc
+            sudo docker pull $GHCR
+            sudo docker tag $GHCR $NAME
 
             CONTAINER_ID="$(sudo docker ps --filter name="$NAME" -q)"
 
-            if [[ ! -z "$ContainerID" ]]; then
+            if [[ ! -z "$CONTAINER_ID" ]]; then
                 echo "$NAME already running as container $CONTAINER_ID: stopping ..."
                 sudo docker stop "$CONTAINER_ID"
             fi
             echo "Starting $NAME ..."
-            sudo docker run --rm --name "$NAME" -p 5005:5005 -d "$NAME"
+            sudo docker run --rm --name "$NAME" -p 5005:5005 -d "$NAME" --network host
             echo "Container $NAME started, cleaning old objects..."
             sudo docker container prune -f
             sudo docker image prune -fa
