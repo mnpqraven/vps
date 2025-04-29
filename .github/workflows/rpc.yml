@@ -80,7 +80,7 @@ jobs:
                 sudo docker stop "$CONTAINER_ID"
             fi
             echo "Starting $NAME ..."
-            sudo docker run --rm --name "$NAME" -p 5005:5005 -d "$NAME" --network host
+            sudo docker run --rm --name "$NAME" -p 5005:5005 -d --network host "$NAME"
             echo "Container $NAME started, cleaning old objects..."
             sudo docker container prune -f
             sudo docker image prune -fa
