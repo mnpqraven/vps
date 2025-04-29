@@ -6,7 +6,7 @@ use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
-pub const API_ADDR: &str = "127.0.0.1:4000";
+pub const API_ADDR: &str = "127.0.0.1:5000";
 
 #[derive(OpenApi)]
 #[openapi()]

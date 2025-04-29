@@ -67,3 +67,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             sudo docker pull ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
+            sudo docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}} vps-rpc
+            sudo docker run --name vps-rpc -p 5005:5005 -d vps-rpc
