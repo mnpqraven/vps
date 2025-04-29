@@ -69,10 +69,9 @@ jobs:
           script: |
             NAME="vps-api"
             GHCR="${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}"
-            OPT='--name vps-api -p 5000:5000 -d'
 
-            sudo docker pull ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
-            sudo docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}} vps-api
+            sudo docker pull $GHCR
+            sudo docker tag $GHCR vps-api
 
             CONTAINER_ID="$(sudo docker ps --filter name="$NAME" -q)"
 
@@ -81,8 +80,8 @@ jobs:
                 sudo docker stop "$CONTAINER_ID"
             fi
             echo "Starting $NAME ..."
-            sudo docker run --rm --name "$NAME" $RUN_OPTIONS "$NAME"
+            sudo docker run --rm --name "$NAME" -p 5000:5000 -d "$NAME"
             echo "Container $NAME started, cleaning old objects..."
             sudo docker container prune -f
-            sudo docker image prune -a -f
+            sudo docker image prune -fa
             echo "Old docker objects cleaned"
