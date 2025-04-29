@@ -66,5 +66,17 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             sudo docker pull ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
-            sudo docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}} vps-rpc
-            sudo docker run --name vps-rpc -p 5005:5005 -d vps-rpc
+            sudo docker tag ${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}} vps-api
+            NAME=vps-api
+            GHCR=${{env.REGISTRY}}/${{env.IMAGE_NAME}}@${{steps.push.outputs.digest}}
+            OPT='--name vps-api -p 5000:5000 -d'
+
+            CONTAINER_ID="$(docker ps --filter name="$NAME" -q)"
+
+            if [[ ! -z "$ContainerID" ]]; then
+                echo "$NAME already running as container $CONTAINER_ID: stopping ..."
+                docker stop "$CONTAINER_ID"
+            fi
+            echo "Starting $NAME ..."
+            exec docker run --rm --name "$NAME" $RUN_OPTIONS "$NAME"
+            echo "Container $NAME started"
