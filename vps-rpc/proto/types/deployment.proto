@@ -1,7 +1,0 @@
-syntax = "proto3";
-package types.deployment;
-
-enum DeploymentKind {
-  Docker = 0;
-  Shell = 1;
-}
