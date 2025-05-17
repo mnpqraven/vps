@@ -23,15 +23,22 @@
           PORT=5005
           ${pkgs.grpcui}/bin/grpcui -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
         '';
+        layout = pkgs.writeShellScriptBin "layout" ''
+          ${pkgs.zellij}/bin/zellij -l .zellij/servers.kdl
+        '';
       in
       {
         packages = {
-          inherit rpcWeb;
+          inherit rpcWeb layout;
         };
 
         apps.rpcWeb = {
           type = "app";
           program = "${self.packages.${system}.rpcWeb}/bin/rpcWeb";
+        };
+        apps.layout = {
+          type = "app";
+          program = "${self.packages.${system}.layout}/bin/layout";
         };
 
         # nix develop
