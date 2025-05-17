@@ -8,6 +8,7 @@ use data_shapes::ServiceCommands;
 use list::list_running_service;
 use std::path::Path;
 use tonic::{Request, Response, Status};
+use tracing::Level;
 
 pub mod build;
 pub mod deploy;
@@ -18,6 +19,7 @@ pub struct ServiceRpc {}
 
 #[tonic::async_trait]
 impl ServiceAction for ServiceRpc {
+    #[tracing::instrument(level=Level::DEBUG, ret(level=Level::INFO))]
     async fn list(&self, _: Request<()>) -> Result<Response<ServiceListResponse>, Status> {
         let services = repo_list();
         Ok(Response::new(ServiceListResponse { services }))
