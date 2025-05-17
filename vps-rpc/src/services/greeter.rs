@@ -1,21 +1,24 @@
 use greeter_server::Greeter;
 use tonic::{Request, Response, Status};
+use tracing::Level;
 
 tonic::include_proto!("helloworld");
 
 #[derive(Debug, Default)]
-pub struct MyGreeter {}
+pub struct GreeterRpc {}
 
 #[tonic::async_trait]
-impl Greeter for MyGreeter {
+impl Greeter for GreeterRpc {
+    #[tracing::instrument(level=Level::DEBUG, ret(level=Level::INFO))]
     async fn say_hello(
         &self,
         request: Request<HelloRequest>,
     ) -> Result<Response<HelloReply>, Status> {
-        println!("Got a request: {:?}", request);
+        let req = request.into_inner();
+        tracing::info!("{:?}", req);
 
         let reply = HelloReply {
-            message: format!("Hello {}!", request.into_inner().name),
+            message: format!("Hello {}!", req.name),
         };
 
         Ok(Response::new(reply))
