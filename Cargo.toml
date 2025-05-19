@@ -1,7 +1,14 @@
 # TODO: update meta
 
 [workspace]
-members = ["vps-rpc", "vps-do", "vps-api", "data-shapes", "proto-build"]
+members = [
+  "vps-rpc",
+  "vps-do",
+  "vps-api",
+  "data-shapes",
+  "proto-build",
+  "load-env",
+]
 resolver = "2"
 
 [workspace.package]
