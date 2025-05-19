@@ -14,11 +14,17 @@ fn _list_files(vec: &mut Vec<PathBuf>, path: &Path) {
             let full_path = path_result.unwrap().path();
             if metadata(&full_path).unwrap().is_dir() {
                 _list_files(vec, &full_path);
-            } else if !full_path.ends_with(".git") {
+            } else if !path_is_git(&full_path) {
                 vec.push(full_path);
             }
         }
     }
+}
+
+fn path_is_git<T: AsRef<Path>>(path: T) -> bool {
+    path.as_ref()
+        .iter()
+        .any(|slice| slice.to_string_lossy().contains(".git"))
 }
 
 #[cfg(test)]
