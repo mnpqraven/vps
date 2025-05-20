@@ -1,0 +1,11 @@
+[package]
+name = "database"
+edition = "2024"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+
+[dependencies]
+limbo = "0.0.20"
+tokio = { version = "1.45.0", features = ["full"] }

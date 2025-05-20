@@ -7,7 +7,7 @@ members = [
   "vps-api",
   "data-shapes",
   "proto-build",
-  "load-env",
+  "load-env", "database",
 ]
 resolver = "2"
 
