@@ -1,12 +1,5 @@
-use schema::EnvSchema;
-use utils::EnvError;
-
 pub mod schema;
 pub mod utils;
-
-pub fn load_env() -> Result<EnvSchema, EnvError> {
-    EnvSchema::new()
-}
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right

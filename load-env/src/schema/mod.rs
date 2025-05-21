@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
+use std::fs::create_dir_all;
 use std::fs::read_to_string;
 use std::path::Path;
 use std::path::PathBuf;
@@ -13,13 +14,11 @@ pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct EnvSchemaDatabase {
-    pub url: String,
-    pub auth_token: String,
-    /// see https://docs.turso.tech/libsql#encryption-at-rest
-    pub enc_key: String,
-    pub local_database_path: String,
+    user: String,
+    password: String,
+    database_entrypoint: String,
 }
 
 impl EnvSchema {
@@ -41,16 +40,23 @@ impl EnvSchema {
 
         Ok(env)
     }
+
+    pub fn db_url(self) -> String {
+        let EnvSchemaDatabase {
+            user,
+            password,
+            database_entrypoint,
+        } = self.database;
+        format!("postgres://{user}:{password}@localhost/{database_entrypoint}")
+    }
 }
 
 impl Default for EnvSchemaDatabase {
     fn default() -> Self {
         Self {
-            url: "http://127.0.0.1:4010".into(),
-            auth_token: String::new(),
-            enc_key: "your_encryption_key".into(),
-            // TODO:
-            local_database_path: "/tmp/vps_database.db".into(),
+            user: "postgres".into(),
+            password: "postgres".into(),
+            database_entrypoint: "mydatabase".into(),
         }
     }
 }
@@ -102,9 +108,11 @@ mod tests {
             "arofuytnrft.toml",
             "Config.notarealplatform.toml",
         ];
-        let good_pass = good_names.iter().all(legit_names);
-        assert!(good_pass);
-        let bad_pass = bad_names.iter().all(|filename| !legit_names(filename));
-        assert!(bad_pass);
+        for name in good_names.iter() {
+            assert!(legit_names(name))
+        }
+        for name in bad_names.iter() {
+            assert!(legit_names(name));
+        }
     }
 }

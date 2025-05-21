@@ -1,14 +1,30 @@
-use limbo::Builder;
+use load_env::schema::EnvSchema;
+use sqlx::postgres::PgPoolOptions;
 use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // TODO: dir
-    let db = Builder::new_local("sqlite.db").build().await?;
-    let conn = db.connect()?;
+    let db_url = EnvSchema::new().unwrap().db_url();
+    dbg!(&db_url);
 
-    let res = conn.query("SELECT * FROM users", ()).await?;
-    println!("Hello, world!");
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await?;
+
+    let recs = sqlx::query!(
+        r#"
+SELECT id, label
+FROM blog_tag
+ORDER BY id
+        "#
+    )
+    .fetch_all(&pool)
+    .await?;
+    for rec in recs {
+        println!("{rec:?}");
+    }
 
     Ok(())
 }
