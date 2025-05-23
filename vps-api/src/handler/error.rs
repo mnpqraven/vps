@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use axum::{http::StatusCode, response::{IntoResponse, Response}};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 
 /// general error type of the application, this should be used in junctions
@@ -16,6 +19,18 @@ pub enum ApiError {
     ServerSide,
     NotFound(String),
     Unknown(anyhow::Error),
+}
+
+impl From<tonic::transport::Error> for ApiError {
+    fn from(value: tonic::transport::Error) -> Self {
+        Self::Unknown(value.into())
+    }
+}
+
+impl From<tonic::Status> for ApiError {
+    fn from(value: tonic::Status) -> Self {
+        Self::Unknown(value.into())
+    }
 }
 
 impl ApiError {

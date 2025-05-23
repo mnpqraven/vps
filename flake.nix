@@ -43,6 +43,9 @@
 
         # nix develop
         devShell = pkgs.mkShell {
+          shellHook = ''
+            export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
+          '';
           nativeBuildInputs = with pkgs; [
             # TODO: fix autocomplete error
             # rustc
@@ -52,6 +55,7 @@
             protobuf
             grpcui
             grpcurl
+            sqlx-cli
           ];
         };
       }

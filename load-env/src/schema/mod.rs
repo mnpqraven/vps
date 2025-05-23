@@ -40,12 +40,12 @@ impl EnvSchema {
         Ok(env)
     }
 
-    pub fn db_url(self) -> String {
+    pub fn db_url(&self) -> String {
         let EnvSchemaDatabase {
             user,
             password,
             database_entrypoint,
-        } = self.database;
+        } = &self.database;
         format!("postgres://{user}:{password}@localhost/{database_entrypoint}")
     }
 }

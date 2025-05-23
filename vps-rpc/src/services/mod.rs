@@ -1,2 +1,3 @@
-pub mod greeter;
 pub mod actions;
+pub mod database;
+pub mod greeter;

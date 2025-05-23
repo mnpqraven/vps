@@ -1,7 +1,10 @@
 use http::Method;
-use rpc::service::service_action_server::ServiceActionServer;
+use rpc::service::{
+    service_action_server::ServiceActionServer, tag_action_server::TagActionServer,
+};
 use services::{
     actions::service::ServiceRpc,
+    database::blog::TagRpc,
     greeter::{greeter_server::GreeterServer, GreeterRpc},
 };
 use tonic::transport::Server;
@@ -48,6 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(GreeterRpc::default()))
         .add_service(ServiceActionServer::new(ServiceRpc::default()))
+        .add_service(TagActionServer::new(TagRpc::default()))
         .serve(RPC_ADDR.parse()?)
         .await?;
 

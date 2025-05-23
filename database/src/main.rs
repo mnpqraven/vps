@@ -2,6 +2,7 @@ use load_env::schema::EnvSchema;
 use sqlx::postgres::PgPoolOptions;
 use std::error::Error;
 
+// NOTE: WIP
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // TODO: dir
