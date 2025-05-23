@@ -1,7 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
-use std::fs::create_dir_all;
 use std::fs::read_to_string;
 use std::path::Path;
 use std::path::PathBuf;
@@ -9,12 +8,12 @@ use tracing::info;
 
 use crate::utils::EnvError;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
 pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct EnvSchemaDatabase {
     user: String,
     password: String,
@@ -90,7 +89,9 @@ fn legit_names<T: AsRef<Path>>(conf_path: T) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use super::EnvSchema;
     use crate::schema::legit_names;
+    use std::fs::read_to_string;
 
     #[test]
     fn correct_filename_sourcing() {
@@ -114,5 +115,14 @@ mod tests {
         for name in bad_names.iter() {
             assert!(legit_names(name));
         }
+    }
+
+    #[test]
+    fn example_equals_default() {
+        // path fn to owned
+        let example = read_to_string("../../../Config.example.toml").unwrap();
+        let parsed = toml::from_str::<EnvSchema>(&example).unwrap();
+        let default = EnvSchema::default();
+        assert_eq!(default, parsed);
     }
 }

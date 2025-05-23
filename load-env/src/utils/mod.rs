@@ -1,3 +1,5 @@
+pub mod path;
+
 #[derive(Debug)]
 pub enum EnvError {
     // TODO: more idiomatic
