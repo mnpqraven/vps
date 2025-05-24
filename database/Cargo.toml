@@ -10,7 +10,6 @@ documentation.workspace = true
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 tokio = { version = "1.45.0", features = ["full"] }
-vps-rpc = { path = "../vps-rpc" }
 tonic = "0.13.1"
 load-env = { path = "../load-env" }
 sqlx = { version = "0.8.6", features = [
