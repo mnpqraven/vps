@@ -1,3 +1,4 @@
+pub mod table;
 pub mod utils;
 
 use load_env::schema::EnvSchema;
