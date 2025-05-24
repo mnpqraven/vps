@@ -1,0 +1,19 @@
+layout {
+    pane size=1 borderless=true {
+        plugin location="compact-bar"
+    }
+    pane split_direction="vertical" {
+        pane borderless=false command="cargo" {
+        	args "run" "--bin" "vps-rpc"
+        }
+	    pane borderless=false command="cargo" {
+	    	args "run" "--bin" "vps-api"
+	    }
+    }
+    pane split_direction="vertical" {
+	    pane borderless=false command="nix" {
+	    	args "run" ".#rpcWeb"
+	    }
+		pane borderless=false
+	}
+}

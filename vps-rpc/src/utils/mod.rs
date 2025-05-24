@@ -1,9 +1,7 @@
+pub mod error;
+
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fs::File, io::Read};
-
-/// current Config.toml shape
-/// [general]
-/// home = "./"
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VpsConfig {

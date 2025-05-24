@@ -1,2 +1,7 @@
 [general]
 home = "/home/othi"
+
+[database]
+user = "postgres"
+password = "postgres"
+database_entrypoint = "mydatabase"

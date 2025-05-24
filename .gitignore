@@ -2,3 +2,7 @@ target
 **/target
 Config.toml
 config.toml
+Config.*.toml
+config.*.toml
+!Config.example.toml
+.direnv

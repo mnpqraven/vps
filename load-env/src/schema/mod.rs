@@ -1,0 +1,103 @@
+use crate::utils::EnvError;
+use crate::utils::filename_resolve::first_legit_file;
+use crate::utils::path::get_first_valid_dir;
+use serde::Deserialize;
+use serde::Serialize;
+use std::fs::read_to_string;
+use tracing::info;
+
+pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
+
+/// config file spec
+/// filename: `config.toml` (capital `C` or `.config` at the front are acceptable)
+/// dir priority:
+/// cargo dir -> `~/.config` -> `usr` (TODO)
+#[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
+pub struct EnvSchema {
+    pub database: EnvSchemaDatabase,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvSchemaDatabase {
+    user: String,
+    password: String,
+    database_entrypoint: String,
+}
+
+impl EnvSchema {
+    pub fn load() -> Result<Self, EnvError> {
+        let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
+        let conf_str = read_to_string(first_legit_file(crate_path, true)?)?;
+
+        info!("[CONFIG] using config from {}", &conf_str);
+        let env = toml::from_str::<EnvSchema>(&conf_str)?;
+
+        Ok(env)
+    }
+
+    pub fn db_url(&self) -> String {
+        let EnvSchemaDatabase {
+            user,
+            password,
+            database_entrypoint,
+        } = &self.database;
+        format!("postgres://{user}:{password}@localhost/{database_entrypoint}")
+    }
+}
+
+impl Default for EnvSchemaDatabase {
+    fn default() -> Self {
+        Self {
+            user: "postgres".into(),
+            password: "postgres".into(),
+            database_entrypoint: "mydatabase".into(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::EnvSchema;
+    use crate::utils::{filename_resolve::is_legit_filename, path::get_first_valid_dir};
+    use std::fs::read_to_string;
+
+    #[test]
+    fn correct_filename_sourcing() {
+        let good_names = [
+            "config.toml",
+            "Config.toml",
+            "config.dev.toml",
+            "Config.production.toml",
+            ".config.toml",
+        ];
+        let bad_names = [
+            "config.example.toml",
+            "Config.example.toml",
+            "Caroftuynrf.arostuf.toml",
+            "arofuytnrft.toml",
+            "Config.notarealplatform.toml",
+        ];
+        for name in good_names.iter() {
+            let is_legit = is_legit_filename(name);
+            println!("matching {name} with regex gives back {is_legit}");
+            assert!(is_legit);
+        }
+        for name in bad_names.iter() {
+            let is_legit = is_legit_filename(name);
+            println!("matching {name} with regex gives back {is_legit}");
+            assert!(!is_legit);
+        }
+    }
+
+    #[test]
+    fn example_equals_default() {
+        // path fn to owned
+        let dir = get_first_valid_dir().unwrap();
+        let example_path = dir.join("Config.example.toml");
+        let example = read_to_string(example_path).unwrap();
+
+        let parsed = toml::from_str::<EnvSchema>(&example).unwrap();
+        let default = EnvSchema::default();
+        assert_eq!(default, parsed);
+    }
+}
