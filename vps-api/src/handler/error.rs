@@ -48,14 +48,14 @@ impl ApiError {
 impl Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let fmt = match self {
-            Self::ParseData(reason) => format!("Incorrect Data\nReason: {}", reason),
+            Self::ParseData(reason) => format!("Incorrect Data\nReason: {reason}"),
             Self::NotFound(resource) => format!("Resrouce/ID {resource} not found"),
             Self::WrongMethod => "Method is not supported".to_owned(),
             Self::EmptyBody => "Missing body data".to_owned(),
-            Self::Unknown(err) => format!("Unknown error: {}", err),
+            Self::Unknown(err) => format!("Unknown error: {err}"),
             Self::ServerSide => "Unknown server error".to_owned(),
         };
-        write!(f, "{}", fmt)
+        write!(f, "{fmt}")
     }
 }
 

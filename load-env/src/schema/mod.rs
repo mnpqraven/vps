@@ -1,13 +1,17 @@
+use crate::utils::EnvError;
+use crate::utils::filename_resolve::first_legit_file;
+use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
 use serde::Serialize;
-use std::env;
 use std::fs::read_to_string;
-use std::path::Path;
-use std::path::PathBuf;
 use tracing::info;
 
-use crate::utils::EnvError;
+pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
 
+/// config file spec
+/// filename: `config.toml` (capital `C` or `.config` at the front are acceptable)
+/// dir priority:
+/// cargo dir -> `~/.config` -> `usr` (TODO)
 #[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
 pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
@@ -21,19 +25,10 @@ pub struct EnvSchemaDatabase {
 }
 
 impl EnvSchema {
-    pub fn new() -> Result<Self, EnvError> {
-        let cargo_dir = env::var("CARGO_MANIFEST_DIR");
-        if cargo_dir.is_err() {
-            // FIXME: graceful handling
-            return Err(EnvError::FileNotFound("manifest dir not found".to_string()));
-        }
-        let cargo_dir = cargo_dir.unwrap();
+    pub fn load() -> Result<Self, EnvError> {
+        let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
+        let conf_str = read_to_string(first_legit_file(crate_path, true)?)?;
 
-        let crate_path = PathBuf::from(cargo_dir);
-        // parent cause we are in /load-env rn
-        let crate_path = crate_path.parent().unwrap();
-
-        let conf_str = source_filename(crate_path)?;
         info!("[CONFIG] using config from {}", &conf_str);
         let env = toml::from_str::<EnvSchema>(&conf_str)?;
 
@@ -60,37 +55,10 @@ impl Default for EnvSchemaDatabase {
     }
 }
 
-fn source_filename<T: AsRef<Path>>(dir: T) -> Result<String, EnvError> {
-    // TODO: search by regex
-    let path = dir.as_ref().join("config.toml");
-
-    info!("{:?}", path);
-    let conf = read_to_string(path)?;
-    Ok(conf)
-}
-
-fn legit_names<T: AsRef<Path>>(conf_path: T) -> bool {
-    let conf_path = conf_path.as_ref();
-    let ext = conf_path.extension();
-    match ext {
-        None => false,
-        Some(ext) if ext.ne("toml") => false,
-        Some(_) => {
-            let filename = conf_path
-                .file_stem()
-                .expect("valid extension = valid stem")
-                .to_string_lossy();
-
-            // FIXME: regex
-            filename.starts_with("Config") || filename.starts_with("config")
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::EnvSchema;
-    use crate::schema::legit_names;
+    use crate::utils::{filename_resolve::is_legit_filename, path::get_first_valid_dir};
     use std::fs::read_to_string;
 
     #[test]
@@ -110,17 +78,24 @@ mod tests {
             "Config.notarealplatform.toml",
         ];
         for name in good_names.iter() {
-            assert!(legit_names(name))
+            let is_legit = is_legit_filename(name);
+            println!("matching {name} with regex gives back {is_legit}");
+            assert!(is_legit);
         }
         for name in bad_names.iter() {
-            assert!(legit_names(name));
+            let is_legit = is_legit_filename(name);
+            println!("matching {name} with regex gives back {is_legit}");
+            assert!(!is_legit);
         }
     }
 
     #[test]
     fn example_equals_default() {
         // path fn to owned
-        let example = read_to_string("../../../Config.example.toml").unwrap();
+        let dir = get_first_valid_dir().unwrap();
+        let example_path = dir.join("Config.example.toml");
+        let example = read_to_string(example_path).unwrap();
+
         let parsed = toml::from_str::<EnvSchema>(&example).unwrap();
         let default = EnvSchema::default();
         assert_eq!(default, parsed);

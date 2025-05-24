@@ -1,15 +1,14 @@
 use http::Method;
-use rpc::service::{
-    service_action_server::ServiceActionServer, tag_action_server::TagActionServer,
-};
-use services::{
-    actions::service::ServiceRpc,
-    database::blog::TagRpc,
-    greeter::{greeter_server::GreeterServer, GreeterRpc},
-};
 use tonic::transport::Server;
 use tower_http::cors::Any;
-use vps_rpc::RPC_ADDR;
+use vps_rpc::{
+    rpc::service::tag_action_server::TagActionServer,
+    services::{
+        database::blog_tag::TagRpc,
+        greeter::{greeter_server::GreeterServer, GreeterRpc},
+    },
+    RPC_ADDR,
+};
 
 pub mod rpc;
 pub mod services;
@@ -50,7 +49,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .trace_fn(|_| tracing::debug_span!("rpc"))
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(GreeterRpc::default()))
-        .add_service(ServiceActionServer::new(ServiceRpc::default()))
         .add_service(TagActionServer::new(TagRpc::default()))
         .serve(RPC_ADDR.parse()?)
         .await?;

@@ -2,11 +2,10 @@ use crate::{
     rpc::service::{
         tag_action_server::TagAction, Id, Pagination, TagDeleteResponse, TagListResponse, TagSchema,
     },
-    utils::get_db,
+    utils::error::RpcError,
 };
+use database::get_db;
 use tonic::{Request, Response, Status};
-
-// INFO: RPC BACKEND -----------------------------------------------------
 
 #[derive(Debug, Default)]
 pub struct TagRpc {}
@@ -22,7 +21,7 @@ impl TagAction for TagRpc {
             page_index,
             page_size,
         } = request.into_inner();
-        let db = get_db().await?;
+        let db = get_db().await.map_err(RpcError::DbError)?;
         tracing::info!("trying to connect");
         let data = sqlx::query_as!(
             TagSchema,
@@ -45,7 +44,7 @@ impl TagAction for TagRpc {
     }
     async fn get_by_id(&self, request: Request<Id>) -> Result<Response<TagSchema>, Status> {
         let Id { id } = request.into_inner();
-        let db = get_db().await?;
+        let db = get_db().await.map_err(RpcError::DbError)?;
         let data = sqlx::query_as!(
             TagSchema,
             "
@@ -64,7 +63,7 @@ impl TagAction for TagRpc {
     async fn update(&self, request: Request<TagSchema>) -> Result<Response<TagSchema>, Status> {
         let req = request.into_inner();
         let TagSchema { id, code, label } = req.clone();
-        let db = get_db().await?;
+        let db = get_db().await.map_err(RpcError::DbError)?;
 
         let _data = sqlx::query!(
             "
@@ -83,7 +82,7 @@ impl TagAction for TagRpc {
     }
     async fn delete(&self, request: Request<Id>) -> Result<Response<TagDeleteResponse>, Status> {
         let Id { id } = request.into_inner();
-        let db = get_db().await?;
+        let db = get_db().await.map_err(RpcError::DbError)?;
 
         let _data = sqlx::query!(
             "

@@ -6,7 +6,7 @@ use std::error::Error;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // TODO: dir
-    let db_url = EnvSchema::new().unwrap().db_url();
+    let db_url = EnvSchema::load().unwrap().db_url();
     dbg!(&db_url);
 
     let pool = PgPoolOptions::new()

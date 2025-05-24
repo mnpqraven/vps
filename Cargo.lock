@@ -372,19 +372,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "data-shapes"
-version = "0.1.0"
-dependencies = [
- "clap",
-]
-
-[[package]]
 name = "database"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "load-env",
  "sqlx",
+ "thiserror",
  "tokio",
+ "tonic",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1014,8 +1012,10 @@ checksum = "241eaef5fd12c88705a01fc1066c48c4b36e0dd4377dcdc7ec3942cea7a69956"
 name = "load-env"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "regex",
  "serde",
+ "thiserror",
  "toml",
  "tracing",
  "tracing-subscriber",
@@ -2483,30 +2483,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "vps-do"
-version = "0.1.0"
-dependencies = [
- "clap",
- "data-shapes",
- "serde",
- "tokio",
- "toml",
- "tonic",
- "vps-rpc",
-]
-
-[[package]]
 name = "vps-rpc"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "clap",
- "data-shapes",
+ "database",
  "http",
  "load-env",
  "prost",
  "proto-build",
  "serde",
  "sqlx",
+ "thiserror",
  "tokio",
  "toml",
  "tonic",

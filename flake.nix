@@ -43,6 +43,7 @@
 
         # nix develop
         devShell = pkgs.mkShell {
+          # TODO: better env
           shellHook = ''
             export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
           '';

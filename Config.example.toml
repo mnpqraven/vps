@@ -2,5 +2,6 @@
 home = "/home/othi"
 
 [database]
-url = "http://127.0.0.1:4010"
-auth_token = "anytoken"
+user = "postgres"
+password = "postgres"
+database_entrypoint = "mydatabase"
