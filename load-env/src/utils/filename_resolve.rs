@@ -1,5 +1,4 @@
-use super::EnvError;
-use crate::schema::NAME_REGEX;
+use crate::{EnvError, schema::NAME_REGEX};
 use regex::Regex;
 use std::{fs::read_dir, path::Path};
 

@@ -1,4 +1,4 @@
-use crate::utils::EnvError;
+use crate::utils::errors::EnvError;
 use crate::utils::filename_resolve::first_legit_file;
 use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
@@ -27,7 +27,8 @@ pub struct EnvSchemaDatabase {
 impl EnvSchema {
     pub fn load() -> Result<Self, EnvError> {
         let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
-        let conf_str = read_to_string(first_legit_file(crate_path, true)?)?;
+        let first_legit_file = first_legit_file(crate_path, true)?;
+        let conf_str = read_to_string(first_legit_file)?;
 
         info!("[CONFIG] using config from {}", &conf_str);
         let env = toml::from_str::<EnvSchema>(&conf_str)?;

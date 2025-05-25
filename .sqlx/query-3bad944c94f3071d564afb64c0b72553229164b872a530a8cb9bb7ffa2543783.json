@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, code, label\n            FROM blog_tag\n            WHERE id = $1\n            ",
+  "query": "\n            SELECT *\n            FROM blog_tag\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -17,6 +17,16 @@
         "ordinal": 2,
         "name": "label",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -27,8 +37,10 @@
     "nullable": [
       false,
       false,
+      false,
+      false,
       false
     ]
   },
-  "hash": "032410f045300a39dabf3df4bc0545fa89d828d563acda02610d19f0fbd80075"
+  "hash": "3bad944c94f3071d564afb64c0b72553229164b872a530a8cb9bb7ffa2543783"
 }

@@ -18,9 +18,11 @@ sqlx = { version = "0.8.6", features = [
   "derive",
   "macros",
   "migrate",
+  "time",
   "json",
 ] }
 thiserror = "2.0.12"
 anyhow = "1.0.98"
 uuid = { version = "1.17.0", features = ["v7"] }
 proto-types = { path = "../proto-types" }
+chrono = "0.4.41"

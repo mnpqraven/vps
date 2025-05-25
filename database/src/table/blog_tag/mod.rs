@@ -1,4 +1,4 @@
-use crate::DbError;
+use crate::{DbError, utils::time::now};
 use proto_types::{
     blog::tag::{BlogTag, BlogTagShape},
     common::db::{Id, Pagination},
@@ -19,7 +19,7 @@ impl BlogTagDb {
         let data = sqlx::query_as!(
             BlogTag,
             "
-            SELECT id, code, label
+            SELECT *
             FROM blog_tag
             LIMIT $1 OFFSET $2
             ",
@@ -39,7 +39,7 @@ impl BlogTagDb {
         let data = sqlx::query_as!(
             BlogTag,
             "
-            SELECT id, code, label
+            SELECT *
             FROM blog_tag
             WHERE id = $1
             ",
@@ -53,16 +53,19 @@ impl BlogTagDb {
     #[instrument(skip(conn), ret)]
     pub async fn create(conn: &Db, payload: &BlogTagShape) -> Result<BlogTag, DbError> {
         let id = Uuid::now_v7().to_string();
+        let now = now();
         let data = sqlx::query_as!(
             BlogTag,
             "
-            INSERT INTO blog_tag (id, code, label)
-            VALUES ($1, $2, $3)
-            RETURNING id, code, label
+            INSERT INTO blog_tag (id, code, label, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
             ",
             id,
             payload.code,
-            payload.label
+            payload.label,
+            now,
+            now
         )
         .fetch_one(conn)
         .await?;
@@ -72,18 +75,21 @@ impl BlogTagDb {
 
     #[instrument(skip(conn), ret)]
     pub async fn update(conn: &Db, payload: &BlogTag) -> Result<BlogTag, DbError> {
-        let BlogTag { id, code, label } = payload;
+        let BlogTag {
+            id, code, label, ..
+        } = payload;
         let data = sqlx::query_as!(
             BlogTag,
             "
             UPDATE blog_tag
-            SET code = $2, label = $3
+            SET code = $2, label = $3, updated_at = $4
             WHERE id = $1
-            RETURNING id, code, label
+            RETURNING *
             ",
             id,
             code,
-            label
+            label,
+            now()
         )
         .fetch_one(conn)
         .await?;
