@@ -2,7 +2,7 @@
 /// https://gist.github.com/Tibowl/7ae7395e000843ad4882030b9c4703b5
 pub mod types;
 
-use crate::handler::error::ApiError;
+use crate::utils::error::ApiError;
 use axum::{extract::rejection::JsonRejection, Json};
 use std::collections::HashMap;
 use tracing::error;
@@ -23,7 +23,7 @@ pub(super) async fn pull_simulation(
     if rpayload.is_err() {
         let err = rpayload.unwrap_err();
         error!("{}", err.body_text());
-        return Err(ApiError::ParseData(err.body_text()));
+        return Err(ApiError::ParseError(err.body_text()));
     }
     // safe unwrap
     let Json(payload) = rpayload.unwrap();

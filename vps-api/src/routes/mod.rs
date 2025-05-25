@@ -13,7 +13,7 @@ pub fn app_router() -> OpenApiRouter {
         .nest("/api/health", health::router())
         .nest("/api/rpcgreet", rpcgreet::router())
         .nest("/api/gacha/pull_simulation", gacha::router())
-        .nest("/api/blog/tag", blog::tag::router())
+        .nest("/api/blog/tag", blog::blog_tag::router())
 }
 
 // basic handler that responds with a static string

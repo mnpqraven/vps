@@ -1,8 +1,6 @@
-use greeter_server::Greeter;
+use proto_types::{greeter_server::Greeter, HelloReply, HelloRequest};
 use tonic::{Request, Response, Status};
 use tracing::Level;
-
-tonic::include_proto!("helloworld");
 
 #[derive(Debug, Default)]
 pub struct GreeterRpc {}

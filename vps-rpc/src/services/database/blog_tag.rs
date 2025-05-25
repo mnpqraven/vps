@@ -1,100 +1,70 @@
-use crate::{
-    rpc::service::{
-        tag_action_server::TagAction, Id, Pagination, TagDeleteResponse, TagListResponse, TagSchema,
-    },
-    utils::error::RpcError,
+use database::table::blog_tag::BlogTagDb;
+use proto_types::{
+    blog::tag::{blog_tag_service_server::BlogTagService, BlogTag, BlogTagList, BlogTagShape},
+    common::db::{Id, Pagination},
 };
-use database::get_db;
+use sqlx::{Pool, Postgres};
 use tonic::{Request, Response, Status};
+use tracing::instrument;
 
-#[derive(Debug, Default)]
-pub struct TagRpc {}
+use crate::utils::error::RpcError;
+
+#[derive(Debug)]
+pub struct BlogTagRpc {
+    pub conn: Pool<Postgres>,
+}
 
 // INFO: implement logic for rpc signatures
 #[tonic::async_trait]
-impl TagAction for TagRpc {
-    async fn list(
-        &self,
-        request: Request<Pagination>,
-    ) -> Result<Response<TagListResponse>, Status> {
-        let Pagination {
-            page_index,
-            page_size,
-        } = request.into_inner();
-        let db = get_db().await.map_err(RpcError::DbError)?;
-        tracing::info!("trying to connect");
-        let data = sqlx::query_as!(
-            TagSchema,
-            "
-                SELECT id, code, label
-                FROM blog_tag
-                LIMIT $1 OFFSET $2
-        ",
-            page_size as i64,
-            (page_index * page_size) as i64
-        )
-        .fetch_all(&db)
-        .await
-        .unwrap();
+impl BlogTagService for BlogTagRpc {
+    #[instrument(skip(self, request), level = "DEBUG", ret)]
+    async fn list(&self, request: Request<Pagination>) -> Result<Response<BlogTagList>, Status> {
+        let pagination = request.into_inner();
+        let data = BlogTagDb::list(&self.conn, &pagination)
+            .await
+            .map_err(RpcError::db_with_context(""))?;
 
-        Ok(Response::new(TagListResponse {
+        Ok(Response::new(BlogTagList {
+            pagination: Some(pagination),
             total: data.len() as i32,
-            tags: data,
+            data,
         }))
     }
-    async fn get_by_id(&self, request: Request<Id>) -> Result<Response<TagSchema>, Status> {
-        let Id { id } = request.into_inner();
-        let db = get_db().await.map_err(RpcError::DbError)?;
-        let data = sqlx::query_as!(
-            TagSchema,
-            "
-                SELECT id, code, label                
-                FROM blog_tag
-                WHERE id = $1
-            ",
-            id,
-        )
-        .fetch_one(&db)
-        .await
-        .unwrap();
 
+    #[instrument(skip(self, request), level = "DEBUG", ret)]
+    async fn get_by_id(&self, request: Request<Id>) -> Result<Response<BlogTag>, Status> {
+        let id = &request.into_inner().id;
+        let data = BlogTagDb::detail(&self.conn, id)
+            .await
+            .map_err(RpcError::db_with_context(id))?;
         Ok(Response::new(data))
     }
-    async fn update(&self, request: Request<TagSchema>) -> Result<Response<TagSchema>, Status> {
+
+    #[instrument(skip(self, request), level = "DEBUG", ret)]
+    async fn create(&self, request: Request<BlogTagShape>) -> Result<Response<BlogTag>, Status> {
         let req = request.into_inner();
-        let TagSchema { id, code, label } = req.clone();
-        let db = get_db().await.map_err(RpcError::DbError)?;
-
-        let _data = sqlx::query!(
-            "
-                UPDATE blog_tag
-                SET code = $2, label = $3
-                WHERE id = $1
-            ",
-            id,
-            code,
-            label
-        )
-        .execute(&db)
-        .await
-        .unwrap();
-        Ok(Response::new(req))
+        let data = BlogTagDb::create(&self.conn, &req)
+            .await
+            // FIXME: unwrap
+            .unwrap();
+        Ok(Response::new(data))
     }
-    async fn delete(&self, request: Request<Id>) -> Result<Response<TagDeleteResponse>, Status> {
-        let Id { id } = request.into_inner();
-        let db = get_db().await.map_err(RpcError::DbError)?;
 
-        let _data = sqlx::query!(
-            "
-                DELETE FROM blog_tag
-                WHERE id = $1
-            ",
-            id
-        )
-        .execute(&db)
-        .await
-        .unwrap();
+    #[instrument(skip(self, request), level = "DEBUG", ret)]
+    async fn update(&self, request: Request<BlogTag>) -> Result<Response<BlogTag>, Status> {
+        let req = &request.into_inner();
+        let data = BlogTagDb::update(&self.conn, req)
+            .await
+            .map_err(RpcError::db_with_context(&req.id))?;
+        Ok(Response::new(data))
+    }
 
-        Ok(Response::new(TagDeleteResponse { ids: vec![id] }))
+    #[instrument(skip(self, request), level = "DEBUG", ret)]
+    async fn delete(&self, request: Request<Id>) -> Result<Response<Id>, Status> {
+        let req = &request.into_inner();
+        let data = BlogTagDb::delete(&self.conn, &req.id)
+            .await
+            .map_err(RpcError::db_with_context(&req.id))?;
+        Ok(Response::new(data))
     }
 }

@@ -1,5 +1,5 @@
-pub mod handler;
 pub mod routes;
+pub mod utils;
 use routes::app_router;
 use tracing::info;
 use utoipa::OpenApi;

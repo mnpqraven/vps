@@ -1,26 +1,24 @@
-use http::Method;
+use proto_types::{
+    blog::tag::blog_tag_service_server::BlogTagServiceServer, greeter_server::GreeterServer,
+    DESCRIPTOR_SET,
+};
+use services::{database::blog_tag::BlogTagRpc, greeter::GreeterRpc};
 use tonic::transport::Server;
-use tower_http::cors::Any;
 use vps_rpc::{
-    rpc::service::tag_action_server::TagActionServer,
-    services::{
-        database::blog_tag::TagRpc,
-        greeter::{greeter_server::GreeterServer, GreeterRpc},
-    },
+    layer::{cors, grpc_web},
     RPC_ADDR,
 };
 
-pub mod rpc;
 pub mod services;
 pub mod utils;
-
-const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
+
+    let conn = database::get_db().await?;
 
     // description service for web ui completion
     let descriptor_service = tonic_reflection::server::Builder::configure()
@@ -29,27 +27,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("RUNNING gRPC SERVER @ {RPC_ADDR}");
 
-    // @ref https://connectrpc.com/docs/cors#configurations-by-protocol
-    let cors_layer = tower_http::cors::CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
-        .allow_headers(Any)
-        .allow_origin([
-            // local web ui
-            "http://127.0.0.1:4000".parse().unwrap(),
-            "http://localhost:4000".parse().unwrap(),
-            // prod origins
-            // "https://othi.dev".parse().unwrap(),
-        ]);
-    let grpc_web_layer = tonic_web::GrpcWebLayer::new();
-
     Server::builder()
         .accept_http1(true)
-        .layer(cors_layer)
-        .layer(grpc_web_layer)
+        .layer(cors())
+        .layer(grpc_web())
         .trace_fn(|_| tracing::debug_span!("rpc"))
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(GreeterRpc::default()))
-        .add_service(TagActionServer::new(TagRpc::default()))
+        .add_service(BlogTagServiceServer::new(BlogTagRpc { conn }))
         .serve(RPC_ADDR.parse()?)
         .await?;
 
