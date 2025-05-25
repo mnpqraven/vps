@@ -1,15 +1,21 @@
-use crate::{
-    DbError,
-    utils::common_structs::{Db, Pagination},
+use crate::DbError;
+use proto_types::{
+    blog::tag::{BlogTag, BlogTagShape},
+    common::db::{Id, Pagination},
 };
+use sqlx::{Pool, Postgres};
 use tracing::instrument;
 use uuid::Uuid;
 
+type Db = Pool<Postgres>;
+
+pub struct BlogTagDb {}
+
 // TODO: return type on all fns
-impl BlogTag {
-    // TODO: wrap in summary object (incl. total, has_next etc)
-    #[instrument(ret)]
-    async fn list(conn: Db, pg: Pagination) -> Result<Vec<BlogTag>, DbError> {
+impl BlogTagDb {
+    #[instrument(skip(conn), ret)]
+    pub async fn list(conn: &Db, pg: &Pagination) -> Result<Vec<BlogTag>, DbError> {
+        let offset = pg.page_index * pg.page_size;
         let data = sqlx::query_as!(
             BlogTag,
             "
@@ -17,10 +23,10 @@ impl BlogTag {
             FROM blog_tag
             LIMIT $1 OFFSET $2
             ",
-            pg.size(),
-            pg.offset()
+            pg.page_size as i64,
+            offset as i64
         )
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await?;
 
         tracing::info!("{data:?}");
@@ -28,8 +34,8 @@ impl BlogTag {
         Ok(data)
     }
 
-    #[instrument(ret)]
-    async fn detail(conn: Db, id: String) -> Result<BlogTag, DbError> {
+    #[instrument(skip(conn), ret)]
+    pub async fn detail(conn: &Db, id: &str) -> Result<BlogTag, DbError> {
         let data = sqlx::query_as!(
             BlogTag,
             "
@@ -39,13 +45,13 @@ impl BlogTag {
             ",
             id
         )
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await?;
         Ok(data)
     }
 
-    #[instrument(ret)]
-    async fn create(conn: Db, payload: BlogTagCreate) -> Result<BlogTag, DbError> {
+    #[instrument(skip(conn), ret)]
+    pub async fn create(conn: &Db, payload: &BlogTagShape) -> Result<BlogTag, DbError> {
         let id = Uuid::now_v7().to_string();
         let data = sqlx::query_as!(
             BlogTag,
@@ -58,14 +64,14 @@ impl BlogTag {
             payload.code,
             payload.label
         )
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await?;
 
         Ok(data)
     }
 
-    #[instrument(ret)]
-    async fn update(conn: Db, payload: BlogTag) -> Result<BlogTag, DbError> {
+    #[instrument(skip(conn), ret)]
+    pub async fn update(conn: &Db, payload: &BlogTag) -> Result<BlogTag, DbError> {
         let BlogTag { id, code, label } = payload;
         let data = sqlx::query_as!(
             BlogTag,
@@ -79,17 +85,25 @@ impl BlogTag {
             code,
             label
         )
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await?;
         Ok(data)
     }
 
-    #[instrument(ret)]
-    async fn delete(conn: Db, id: String) -> Result<(), DbError> {
-        sqlx::query!("DELETE FROM blog_tag WHERE id = $1", id)
-            .fetch_one(&conn)
-            .await?;
+    #[instrument(skip(conn), ret)]
+    pub async fn delete(conn: &Db, id: &str) -> Result<Id, DbError> {
+        let id = sqlx::query_as!(
+            Id,
+            "
+            DELETE FROM blog_tag
+            WHERE id = $1
+            RETURNING id
+            ",
+            id
+        )
+        .fetch_one(conn)
+        .await?;
 
-        Ok(())
+        Ok(id)
     }
 }

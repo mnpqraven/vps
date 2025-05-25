@@ -1,19 +1,16 @@
+use proto_types::{
+    blog::tag::blog_tag_service_server::BlogTagServiceServer, greeter_server::GreeterServer,
+    DESCRIPTOR_SET,
+};
+use services::{database::blog_tag::BlogTagRpc, greeter::GreeterRpc};
 use tonic::transport::Server;
 use vps_rpc::{
     layer::{cors, grpc_web},
-    // rpc::service::tag_action_server::TagActionServer,
-    services::{
-        database::blog_tag::BlogTagRpc,
-        greeter::{greeter_server::GreeterServer, GreeterRpc},
-    },
     RPC_ADDR,
 };
 
-pub mod rpc;
 pub mod services;
 pub mod utils;
-
-const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .trace_fn(|_| tracing::debug_span!("rpc"))
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(GreeterRpc::default()))
-        // .add_service(TagActionServer::new(TagRpc { conn }))
+        .add_service(BlogTagServiceServer::new(BlogTagRpc { conn }))
         .serve(RPC_ADDR.parse()?)
         .await?;
 

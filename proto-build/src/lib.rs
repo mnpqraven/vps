@@ -38,7 +38,7 @@ mod tests {
         let proto_dir = root_dir
             .parent()
             .expect("root should be the workspace tree")
-            .join("vps-rpc")
+            .join("proto-types")
             .join("proto");
         let files = list_proto_files(&proto_dir);
         println!("PATH: {proto_dir:?}");

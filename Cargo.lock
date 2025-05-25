@@ -377,6 +377,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "load-env",
+ "proto-types",
  "sqlx",
  "thiserror",
  "tokio",
@@ -1401,6 +1402,19 @@ dependencies = [
 [[package]]
 name = "proto-build"
 version = "0.1.0"
+
+[[package]]
+name = "proto-types"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "proto-build",
+ "serde",
+ "tonic",
+ "tonic-build",
+ "tonic-reflection",
+ "utoipa",
+]
 
 [[package]]
 name = "quote"
@@ -2492,8 +2506,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "proto-types",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tonic",
  "tracing",
@@ -2515,6 +2531,7 @@ dependencies = [
  "load-env",
  "prost",
  "proto-build",
+ "proto-types",
  "serde",
  "sqlx",
  "thiserror",
