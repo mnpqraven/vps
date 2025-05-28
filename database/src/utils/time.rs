@@ -1,6 +1,5 @@
 use chrono::Utc;
 
-// TODO: better cast
-pub fn now() -> i32 {
-    Utc::now().timestamp_millis() as i32
+pub fn now() -> i64 {
+    Utc::now().timestamp_millis()
 }
