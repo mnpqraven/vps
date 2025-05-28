@@ -6,3 +6,5 @@ The default following ports are used:
 
 - 5000: API server
 - 5005: RPC server
+- 5010: Admin portal (leptos)
+- 4000: Client (react, wip)

@@ -26,6 +26,8 @@
         layout = pkgs.writeShellScriptBin "layout" ''
           ${pkgs.zellij}/bin/zellij -l .zellij/servers.kdl
         '';
+        # TODO: trunk cmd
+        # `trunk serve --open --port 5010`
       in
       {
         packages = {
@@ -46,6 +48,7 @@
           # TODO: better env
           shellHook = ''
             export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
+            export RUSTFLAGS="--cfg erase_components"
           '';
           nativeBuildInputs = with pkgs; [
             # TODO: fix autocomplete error
@@ -57,6 +60,9 @@
             grpcui
             grpcurl
             sqlx-cli
+            cargo-generate
+            trunk
+            leptosfmt
           ];
         };
       }
