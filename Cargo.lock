@@ -1503,7 +1503,6 @@ dependencies = [
  "serde",
  "tonic",
  "tonic-build",
- "tonic-reflection",
  "utoipa",
 ]
 
