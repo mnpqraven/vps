@@ -9,7 +9,7 @@ default-run = "vps-rpc"
 
 [dependencies]
 prost = "0.13.5"
-tokio = { version = "1.44.1", features = ["full"] }
+tokio.workspace = true
 tonic = "0.13.1"
 tonic-reflection = "0.13.1"
 proto-types = { path = "../proto-types" }
@@ -33,8 +33,8 @@ tonic-web = "0.13.1"
 tower = "0.5.2"
 http = "1.3.1"
 utoipa = "5.3.1"
-thiserror = "2.0.12"
-anyhow = "1.0.98"
+thiserror.workspace = true
+anyhow.workspace = true
 
 [build-dependencies]
 tonic-build = "0.13.1"

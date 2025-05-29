@@ -54,6 +54,7 @@
             # TODO: fix autocomplete error
             # rustc
             # cargo
+            tailwindcss_4
             rustup
             bacon
             protobuf
