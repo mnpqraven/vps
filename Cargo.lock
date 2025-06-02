@@ -27,6 +27,7 @@ dependencies = [
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
+ "proto-types",
  "tokio",
  "wasm-bindgen",
 ]

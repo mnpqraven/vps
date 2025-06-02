@@ -1,8 +1,10 @@
+use crate::routes::database::tables::DatabaseTablesPage;
+use crate::routes::HomePage;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
-    StaticSegment,
+    path,
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -32,7 +34,6 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-
         // sets the document title
         <Title text="Welcome to Leptos" />
 
@@ -40,22 +41,10 @@ pub fn App() -> impl IntoView {
         <Router>
             <main>
                 <Routes fallback=|| "Page not found.".into_view()>
-                    <Route path=StaticSegment("") view=HomePage />
+                    <Route path=path!("/") view=HomePage />
+                    <Route path=path!("/database/tables") view=DatabaseTablesPage />
                 </Routes>
             </main>
         </Router>
-    }
-}
-
-/// Renders the home page of your application.
-#[component]
-fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
-    let count = RwSignal::new(0);
-    let on_click = move |_| *count.write() += 1;
-
-    view! {
-        <h1 class="text-xl">"Welcome to Leptos!"</h1>
-        <button class="p-2 rounded-md border bg-grey-500" on:click=on_click>"Click Me: " {count}</button>
     }
 }
