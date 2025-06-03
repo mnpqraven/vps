@@ -9,24 +9,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|file| file.strip_prefix(root_dir.clone()).unwrap().to_path_buf())
         .collect();
 
-    #[cfg(feature = "transport")]
-    tonic_build::configure()
-        .type_attribute(
-            ".",
-            "#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)] #[serde(rename_all = \"snake_case\")]",
-        )
-        .file_descriptor_set_path(out_dir.join("descriptor.bin"))
-        .compile_protos(&proto_files, &["proto"])?;
-
+    #[allow(unused_mut, reason = "need for feature")]
+    let mut transport = true;
     #[cfg(not(feature = "transport"))]
+    {
+        transport = false;
+    }
+
     tonic_build::configure()
         .type_attribute(
             ".",
             "#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)] #[serde(rename_all = \"snake_case\")]",
         )
-        .build_client(false)
-        .build_server(false)
-        .build_transport(false)
+        .build_client(transport)
+        .build_server(transport)
+        .build_transport(transport)
         .file_descriptor_set_path(out_dir.join("descriptor.bin"))
         .compile_protos(&proto_files, &["proto"])?;
 
