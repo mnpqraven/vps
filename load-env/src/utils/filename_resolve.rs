@@ -1,6 +1,7 @@
 use crate::{EnvError, schema::NAME_REGEX};
 use regex::Regex;
 use std::{fs::read_dir, path::Path};
+use tracing::instrument;
 
 pub fn is_legit_filename(filename: &str) -> bool {
     let name_regex = Regex::new(NAME_REGEX).unwrap();
@@ -10,6 +11,7 @@ pub fn is_legit_filename(filename: &str) -> bool {
 /// some document
 ///
 /// * `fullpath` - wheter the return the fullpath or just the file name
+#[instrument(ret, skip(path), level = "debug")]
 pub fn first_legit_file<P: AsRef<Path>>(path: P, fullpath: bool) -> Result<String, EnvError> {
     let filename_or_path = read_dir(path)?
         .flatten()

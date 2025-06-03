@@ -4,7 +4,7 @@ use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
 use serde::Serialize;
 use std::fs::read_to_string;
-use tracing::info;
+use tracing::instrument;
 
 pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
 
@@ -15,6 +15,12 @@ pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
 #[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
 pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
+    pub rpc: EnvSchemaRpc,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvSchemaRpc {
+    port: i32,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -25,12 +31,12 @@ pub struct EnvSchemaDatabase {
 }
 
 impl EnvSchema {
+    #[instrument(ret, level = "debug")]
     pub fn load() -> Result<Self, EnvError> {
         let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
         let first_legit_file = first_legit_file(crate_path, true)?;
         let conf_str = read_to_string(first_legit_file)?;
 
-        info!("[CONFIG] using config from {}", &conf_str);
         let env = toml::from_str::<EnvSchema>(&conf_str)?;
 
         Ok(env)
@@ -46,6 +52,12 @@ impl EnvSchema {
     }
 }
 
+impl Default for EnvSchemaRpc {
+    fn default() -> Self {
+        Self { port: 5005 }
+    }
+}
+
 impl Default for EnvSchemaDatabase {
     fn default() -> Self {
         Self {
@@ -53,6 +65,12 @@ impl Default for EnvSchemaDatabase {
             password: "postgres".into(),
             database_entrypoint: "mydatabase".into(),
         }
+    }
+}
+
+impl EnvSchemaRpc {
+    pub fn client_url(&self) -> String {
+        format!("grpc://127.0.0.1:{}", self.port)
     }
 }
 

@@ -7,6 +7,10 @@ async fn main() {
     use leptos::{config::get_configuration, logging::log};
     use leptos_axum::{generate_route_list, LeptosRoutes};
 
+    tracing_subscriber::fmt::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
+
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
     let leptos_options = conf.leptos_options;

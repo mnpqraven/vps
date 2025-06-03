@@ -14,7 +14,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ".",
             "#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)] #[serde(rename_all = \"snake_case\")]",
         )
-        // .protoc_arg("--experimental_allow_proto3_optional")
         .file_descriptor_set_path(out_dir.join("descriptor.bin"))
         .compile_protos(&proto_files, &["proto"])?;
 

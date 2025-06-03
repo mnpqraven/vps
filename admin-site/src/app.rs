@@ -4,7 +4,7 @@ use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
-    path, SsrMode,
+    path,
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -42,7 +42,7 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback=|| "Page not found.".into_view()>
                     <Route path=path!("/") view=HomePage />
-                    <Route path=path!("/database/tables") view=DatabaseTablesPage ssr=SsrMode::Async />
+                    <Route path=path!("/database/tables") view=DatabaseTablesPage />
                 </Routes>
             </main>
         </Router>

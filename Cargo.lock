@@ -27,8 +27,12 @@ dependencies = [
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
+ "load-env",
  "proto-types",
+ "serde",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
  "wasm-bindgen",
 ]
 

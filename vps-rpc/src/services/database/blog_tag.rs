@@ -22,7 +22,7 @@ impl BlogTagService for BlogTagRpc {
         let pagination = request.into_inner();
         let data = BlogTagDb::list(&self.conn, &pagination)
             .await
-            .map_err(RpcError::db_with_context(""))?;
+            .map_err(RpcError::db_with_context("uhh idk ???"))?;
 
         Ok(Response::new(BlogTagList {
             pagination: Some(pagination),
