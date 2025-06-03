@@ -63,6 +63,7 @@
             sqlx-cli
             cargo-generate
             trunk
+            cargo-leptos
             leptosfmt
           ];
         };

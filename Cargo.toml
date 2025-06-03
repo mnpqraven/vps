@@ -4,7 +4,7 @@ members = [
   "admin-site",
   "database",
   "load-env",
-  "proto-build",
+  "proto-build-help",
   "proto-types",
   "vps-api",
   "vps-rpc",

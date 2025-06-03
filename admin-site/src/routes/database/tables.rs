@@ -1,21 +1,13 @@
-#[cfg(feature = "ssr")]
-use proto_types::{
-    blog::tag::blog_tag_service_client::BlogTagServiceClient, common::db::Pagination,
-};
-
 use leptos::prelude::*;
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-struct Paging {
-    page_index: i32,
-    page_size: i32,
-}
+use proto_types::{blog::tag::BlogTagList, common::db::Pagination};
 
 #[component]
 pub fn DatabaseTablesPage() -> impl IntoView {
     // TODO: dynamic params
-    let (pagination, _set_pagination) = signal(0);
+    let (pagination, _set_pagination) = signal(Pagination {
+        page_index: 0,
+        page_size: 15,
+    });
 
     let async_data = Resource::new(
         // TODO: unwrap
@@ -40,17 +32,14 @@ pub fn DatabaseTablesPage() -> impl IntoView {
 }
 
 #[server]
-async fn load(index: i32) -> Result<i32, ServerFnError> {
-    // TODO: better types
+async fn load(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
+    use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
     let env = load_env::EnvSchema::load().unwrap_or_default();
     let mut client = BlogTagServiceClient::connect(env.rpc.client_url()).await?;
     let res = client
-        .list(Pagination {
-            page_index: index,
-            page_size: 10,
-        })
+        .list(pagination)
         .await
-        .map(|e| e.into_inner().total)
+        .map(|e| e.into_inner())
         .map_err(|_| ServerFnError::new("some bull"));
     res
 }

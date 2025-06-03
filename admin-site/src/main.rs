@@ -3,7 +3,6 @@
 async fn main() {
     use admin_site::app::*;
     use axum::Router;
-    use leptos::prelude::*;
     use leptos::{config::get_configuration, logging::log};
     use leptos_axum::{generate_route_list, LeptosRoutes};
 
