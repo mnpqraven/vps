@@ -1,19 +1,12 @@
 use leptos::prelude::*;
-use proto_types::{blog::tag::BlogTagList, common::db::Pagination};
+use proto_types::{blog::tag::BlogTagList, common::db::Pagination, impls::DefaultState};
 
 #[component]
 pub fn DatabaseTablesPage() -> impl IntoView {
     // TODO: dynamic params
-    let (pagination, _set_pagination) = signal(Pagination {
-        page_index: 0,
-        page_size: 15,
-    });
+    let (pagination, _set_pagination) = signal(Pagination::default_state());
 
-    let async_data = Resource::new(
-        // TODO: unwrap
-        move || pagination.get(),
-        load,
-    );
+    let async_data = Resource::new(move || pagination.get(), load);
 
     view! {
         <div class="flex flex-col gap-4">
@@ -33,13 +26,15 @@ pub fn DatabaseTablesPage() -> impl IntoView {
 
 #[server]
 async fn load(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
+    use crate::state::ctx;
     use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
-    let env = load_env::EnvSchema::load().unwrap_or_default();
-    let mut client = BlogTagServiceClient::connect(env.rpc.client_url()).await?;
-    let res = client
+
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
+
+    let res = rpc
         .list(pagination)
         .await
         .map(|e| e.into_inner())
-        .map_err(|_| ServerFnError::new("some bull"));
+        .map_err(|status| ServerFnError::new(status.to_string()));
     res
 }

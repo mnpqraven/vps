@@ -20,8 +20,7 @@ use types::{Banner, ProbabilityRatePayload, ProbabilityRateResponse, ReducedSim,
 pub(super) async fn pull_simulation(
     rpayload: Result<Json<ProbabilityRatePayload>, JsonRejection>,
 ) -> Result<Json<ProbabilityRateResponse>, ApiError> {
-    if rpayload.is_err() {
-        let err = rpayload.unwrap_err();
+    if let Err(err) = rpayload {
         error!("{}", err.body_text());
         return Err(ApiError::ParseError(err.body_text()));
     }

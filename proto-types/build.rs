@@ -10,6 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     #[allow(unused_mut, reason = "need for feature")]
+    #[allow(unused_assignments)]
     let mut transport = true;
     #[cfg(not(feature = "transport"))]
     {

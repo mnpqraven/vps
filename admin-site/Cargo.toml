@@ -16,7 +16,7 @@ console_error_panic_hook = { version = "0.1", optional = true }
 tokio = { workspace = true, features = ["rt-multi-thread"], optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 proto-types = { path = "../proto-types", default-features = false }
-load-env = { path = "../load-env", optional = true }
+load-env = { path = "../load-env" }
 serde.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
@@ -25,7 +25,6 @@ tracing-subscriber.workspace = true
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook", "dep:wasm-bindgen"]
 ssr = [
   "proto-types/transport",
-  "dep:load-env",
   "dep:axum",
   "dep:tokio",
   "dep:leptos_axum",
