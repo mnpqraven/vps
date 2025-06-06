@@ -6,3 +6,9 @@ Config.*.toml
 config.*.toml
 !Config.example.toml
 .direnv
+
+node_modules/
+debug/
+**/*.rs.bk
+# MSVC Windows builds of rustc generate these, which store debugging information
+*.pdb
