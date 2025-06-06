@@ -10,6 +10,7 @@ use proto_types::{
 pub fn DatabaseTablesPage() -> impl IntoView {
     // TODO: dynamic params
     let (pagination, set_pagination) = signal(Pagination::default_state());
+    let (pending, set_pending) = signal(false);
 
     let async_data = Resource::new(move || pagination.get(), get_blog_tags);
 
@@ -22,7 +23,7 @@ pub fn DatabaseTablesPage() -> impl IntoView {
         async_data.get().map(|result| {
             let req = result.unwrap();
             let defs = defs.clone();
-            view! { <Table data={req.data} column_defs=defs /> }
+            view! { <Table data=req.data column_defs=defs /> }
         })
     };
 
@@ -37,7 +38,10 @@ pub fn DatabaseTablesPage() -> impl IntoView {
 
     view! {
         <div class="flex flex-col gap-4 p-4">
-            <Suspense fallback=move || view! { <p>"Loading..."</p> }>{table_view}</Suspense>
+            <p>{move || if pending.get() { "Hang on..." } else { "Ready." }}</p>
+            <Transition set_pending fallback=move || view! { <p>"Loading initial..."</p> }>
+                {table_view}
+            </Transition>
 
             <div class="flex gap-2 items-center">
                 <button on:click=on_prev>"prev"</button>

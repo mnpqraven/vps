@@ -62,9 +62,7 @@ pub fn Table<T>(data: Vec<T>, column_defs: ColumnDefs<T>) -> impl IntoView {
     view! {
         <table class="border">
             <tbody>
-                <tr class="border border-b">
-                    {th_header}
-                </tr>
+                <tr class="border border-b">{th_header}</tr>
                 {rows}
             </tbody>
         </table>
