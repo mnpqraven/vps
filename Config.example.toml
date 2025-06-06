@@ -1,6 +1,9 @@
 [general]
 home = "/home/othi"
 
+[rpc]
+port = 5005
+
 [database]
 user = "postgres"
 password = "postgres"

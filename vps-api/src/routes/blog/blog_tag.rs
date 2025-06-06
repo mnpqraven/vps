@@ -5,7 +5,7 @@ use proto_types::{
         blog_tag_service_client::BlogTagServiceClient, BlogTag, BlogTagList, BlogTagShape,
     },
     common::db::{Id, Pagination},
-    impls::ApiDefault,
+    impls::DefaultState,
 };
 use utoipa_axum::{router::OpenApiRouter, routes};
 use vps_rpc::RPC_URL;
@@ -16,7 +16,7 @@ use vps_rpc::RPC_URL;
     path = "",
     request_body(
         content = Pagination,
-        example = json!(Pagination::api_default())
+        example = json!(Pagination::default_state())
     ),
     responses(
         (status = OK, description = "Success", body = BlogTagList)

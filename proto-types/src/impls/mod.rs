@@ -1,11 +1,11 @@
 use crate::common::db::Pagination;
 
-pub trait ApiDefault {
-    fn api_default() -> Self;
+pub trait DefaultState {
+    fn default_state() -> Self;
 }
 
-impl ApiDefault for Pagination {
-    fn api_default() -> Self {
+impl DefaultState for Pagination {
+    fn default_state() -> Self {
         Self {
             page_index: 0,
             page_size: 10,

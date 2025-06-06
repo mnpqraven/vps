@@ -3,27 +3,39 @@ on:
   push:
   pull_request:
 jobs:
-  api:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: arduino/setup-protoc@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: lint
-        run: cargo check --package vps-api
-      - name: test
-        run: cargo test --package vps-api
-  rpc:
+      - run: cargo check
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: arduino/setup-protoc@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: lint
-        run: cargo check --package vps-rpc
-      - name: test
-        run: cargo test --package vps-rpc
+      - run: cargo test

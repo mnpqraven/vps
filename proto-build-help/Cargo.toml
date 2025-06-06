@@ -1,5 +1,5 @@
 [package]
-name = "proto-build"
+name = "proto-build-help"
 edition = "2024"
 version.workspace = true
 authors.workspace = true

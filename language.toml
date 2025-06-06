@@ -1,9 +1,19 @@
 [[language]]
 name = "rust"
+language-servers = ["rust-analyzer", "tailwindcss", "emmet-lsp"]
+auto-format = true
 
-[language-server.rust-analyzer]
-config = { procMacro = { ignored = { leptos_macro = [
-  # Optional:
-  "component",
-  "server",
-] } } }
+[language-server.tailwindcss]
+command = "tailwindcss-language-server"
+language-id = "rust"
+args = ["--stdio"]
+
+[language-server.tailwindcss.config]
+tailwindCSS = { includeLanguages = { rust = "html", "*.rs" = "html" } }
+
+# [language-server.rust-analyzer.config]
+# procMacro = { ignored = { leptos_macro = ["server"] } }
+# cargo = { allFeatures = true }
+
+[language-server.emmet-lsp.config]
+emmet = { includeLanguages = { rust = "html", "*.rs" = "html" } }

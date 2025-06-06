@@ -54,6 +54,7 @@
             # TODO: fix autocomplete error
             # rustc
             # cargo
+            tailwindcss_4
             rustup
             bacon
             protobuf
@@ -62,6 +63,7 @@
             sqlx-cli
             cargo-generate
             trunk
+            cargo-leptos
             leptosfmt
           ];
         };
