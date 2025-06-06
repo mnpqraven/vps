@@ -1,14 +1,16 @@
-use std::path::PathBuf;
+use std::{env::current_dir, path::PathBuf};
 use tracing::instrument;
 
 /// priority: see [`EnvSchema`]
 #[instrument(ret, level = "debug")]
 pub fn get_first_valid_dir() -> Option<PathBuf> {
-    match (cargo_dir(), user_config_dir()) {
-        (Some(cargo), _) => Some(cargo),
-        (_, Some(user)) => Some(user),
-        _ => None,
+    if let Some(cargo) = cargo_dir() {
+        return Some(cargo);
     }
+    if let Some(user) = user_config_dir() {
+        return Some(user);
+    }
+    return current_dir().ok();
 }
 
 /// ./vps
