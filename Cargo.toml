@@ -1,5 +1,4 @@
 [workspace]
-exclude = []
 members = [
   "admin-site",
   "database",
