@@ -25,7 +25,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_pool() {
-        let db_url = EnvSchema::load().unwrap().db_url();
+        let db_url = EnvSchema::load().unwrap_or_default().db_url();
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .connect(&db_url)
