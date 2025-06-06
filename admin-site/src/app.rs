@@ -28,6 +28,8 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     }
 }
 
+// TODO: dark mode
+// @see https://github.com/leptos-rs/leptos/discussions/3399#discussioncomment-11645140
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.

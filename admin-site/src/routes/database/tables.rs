@@ -1,4 +1,7 @@
-use crate::ui::primitive::table::{ColumnDefs, Table};
+use crate::ui::primitive::{
+    button::Button,
+    table::{ColumnDefs, Table},
+};
 use leptos::prelude::*;
 use proto_types::{
     blog::tag::{BlogTag, BlogTagList},
@@ -44,9 +47,9 @@ pub fn DatabaseTablesPage() -> impl IntoView {
             </Transition>
 
             <div class="flex gap-2 items-center">
-                <button on:click=on_prev>"prev"</button>
+                <Button on:click=on_prev>"prev"</Button>
                 <span>{move || pagination.get().page_index}</span>
-                <button on:click=on_next>"next"</button>
+                <Button on:click=on_next>"next"</Button>
             </div>
         </div>
     }
