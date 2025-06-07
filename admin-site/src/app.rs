@@ -1,5 +1,7 @@
-use crate::routes::database::tables::DatabaseTablesPage;
-use crate::routes::HomePage;
+use crate::routes::{
+    database::tables::{blog_tag::DatabaseTableBlogTagPage, DatabaseTablePage},
+    HomePage,
+};
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -44,7 +46,8 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback=|| "Page not found.".into_view()>
                     <Route path=path!("/") view=HomePage />
-                    <Route path=path!("/database/tables") view=DatabaseTablesPage />
+                    <Route path=path!("/database/tables") view=DatabaseTablePage />
+                    <Route path=path!("/database/tables/blog_tag") view=DatabaseTableBlogTagPage />
                 </Routes>
             </main>
         </Router>

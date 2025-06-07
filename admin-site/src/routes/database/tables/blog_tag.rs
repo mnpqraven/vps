@@ -10,7 +10,7 @@ use proto_types::{
 };
 
 #[component]
-pub fn DatabaseTablesPage() -> impl IntoView {
+pub fn DatabaseTableBlogTagPage() -> impl IntoView {
     // TODO: dynamic params
     let (pagination, set_pagination) = signal(Pagination::default_state());
     let (pending, set_pending) = signal(false);
