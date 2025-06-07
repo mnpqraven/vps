@@ -1,41 +1,18 @@
 pub mod database;
+pub mod service_types;
 
+use crate::ui::primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle};
 use leptos::prelude::*;
 use leptos_router::components::A;
-
-/// general service item (database, syncthing, etc...)
-struct ServiceItem {
-    title: String,
-    description: Option<String>,
-    sub_services: Vec<SubService>,
-}
-
-/// child service/option that belongs to a service
-struct SubService {
-    title: String,
-    href: String,
-}
-
-impl SubService {
-    fn new(title: &str, href: &str) -> Self {
-        Self {
-            title: title.into(),
-            href: href.into(),
-        }
-    }
-}
+use service_types::{ServiceItem, SubService};
 
 /// Renders the home page of your application.
 #[component]
 pub fn HomePage() -> impl IntoView {
-    let services: Vec<ServiceItem> = vec![ServiceItem {
-        title: "Database".into(),
-        description: None,
-        sub_services: vec![
-            SubService::new("Tables", "/database/tables"),
-            SubService::new("Health", "/database/health"),
-        ],
-    }];
+    let services: Vec<ServiceItem> = vec![ServiceItem::new("Homelab")
+        .service(SubService::new("Database", "/database"))
+        .service(SubService::new("NAS", "/nas"))
+        .service(SubService::new("RPC Server", "/rpc-server"))];
 
     let service_card_views = services
         .into_iter()
@@ -65,22 +42,26 @@ fn ServiceCard(
     sub_services: Vec<SubService>,
 ) -> impl IntoView {
     let has_desc = !description.is_empty();
-    // class="rounded-md border p-2 hover:cursor-pointer"
+    let sub_service_views = sub_services
+        .into_iter()
+        .map(|sub_service| {
+            view! {
+                <A href=sub_service.href>
+                    <div class="border rounded-xl p-4">{sub_service.title}</div>
+                </A>
+            }
+        })
+        .collect_view();
 
     view! {
-        <div class="p-4">
-            <div class="text-lg font-semibold">{title}</div>
-            <Show when=move || has_desc>
-                <span>{description.clone()}</span>
-            </Show>
-            <div class="grid grid-cols-3 gap-2 border p-4">
-                {sub_services
-                    .into_iter()
-                    .map(|sub_service| {
-                        view! { <A href=sub_service.href>{sub_service.title}</A> }
-                    })
-                    .collect_view()}
-            </div>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <Show when=move || has_desc>
+                    <CardDescription clone:description>{description}</CardDescription>
+                </Show>
+            </CardHeader>
+            <CardContent class="grid grid-cols-3 gap-2".into()>{sub_service_views}</CardContent>
+        </Card>
     }
 }

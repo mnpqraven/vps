@@ -1,6 +1,9 @@
-use crate::ui::primitive::{
-    button::Button,
-    table::{ColumnDefs, Table},
+use crate::ui::{
+    back_button::BackButton,
+    primitive::{
+        button::Button,
+        table::{ColumnDefs, Table},
+    },
 };
 use leptos::prelude::*;
 use proto_types::{
@@ -41,16 +44,22 @@ pub fn DatabaseTableBlogTagPage() -> impl IntoView {
 
     view! {
         <div class="flex flex-col gap-4 p-4">
-            <p>{move || if pending.get() { "Hang on..." } else { "Ready." }}</p>
-            <Transition set_pending fallback=move || view! { <p>"Loading initial..."</p> }>
-                {table_view}
-            </Transition>
+            <div class="flex gap-4 items-center">
+                <BackButton />
+                <Show when=pending>
+                    <p>"Loading..."</p>
+                </Show>
+            </div>
 
             <div class="flex gap-2 items-center">
                 <Button on:click=on_prev>"prev"</Button>
-                <span>{move || pagination.get().page_index}</span>
+                <span>Page {move || pagination.get().page_index + 1}</span>
                 <Button on:click=on_next>"next"</Button>
             </div>
+
+            <Transition set_pending fallback=move || view! { <p>"Loading initial..."</p> }>
+                {table_view}
+            </Transition>
         </div>
     }
 }
