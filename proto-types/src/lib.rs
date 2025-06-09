@@ -15,6 +15,9 @@ pub mod blog {
     pub mod tag {
         tonic::include_proto!("blog.tag");
     }
+    pub mod meta {
+        tonic::include_proto!("blog.meta");
+    }
 }
 
 pub mod common {

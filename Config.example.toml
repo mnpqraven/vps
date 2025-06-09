@@ -1,6 +1,3 @@
-[general]
-home = "/home/othi"
-
 [rpc]
 port = 5005
 
@@ -8,3 +5,4 @@ port = 5005
 user = "postgres"
 password = "postgres"
 database_entrypoint = "mydatabase"
+blob_storage_path = "~/.vps/data"

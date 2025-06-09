@@ -10,6 +10,7 @@ use leptos_router::components::A;
 
 use super::service_types::SubService;
 
+pub mod fhs_storage;
 pub mod health;
 pub mod tables;
 
@@ -17,6 +18,7 @@ pub mod tables;
 pub fn DatabasePage() -> impl IntoView {
     let services: Vec<ServiceItem> = vec![ServiceItem::new("Database")
         .service(SubService::new("Tables", "/database/tables"))
+        .service(SubService::new("FHS Storge", "/database/fhs"))
         .service(SubService::new("Health", "/database/health"))];
 
     let service_card_views = services

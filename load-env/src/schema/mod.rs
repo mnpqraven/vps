@@ -28,6 +28,7 @@ pub struct EnvSchemaDatabase {
     user: String,
     password: String,
     database_entrypoint: String,
+    blob_storage_path: String,
 }
 
 impl EnvSchema {
@@ -47,6 +48,7 @@ impl EnvSchema {
             user,
             password,
             database_entrypoint,
+            ..
         } = &self.database;
         format!("postgres://{user}:{password}@localhost/{database_entrypoint}")
     }
@@ -64,6 +66,7 @@ impl Default for EnvSchemaDatabase {
             user: "postgres".into(),
             password: "postgres".into(),
             database_entrypoint: "mydatabase".into(),
+            blob_storage_path: "~/.vps/data".into(),
         }
     }
 }
