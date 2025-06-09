@@ -1,26 +1,53 @@
-use crate::app::ColorMode;
+use crate::utils::hooks::use_theme::{use_theme, ColorMode};
 use leptos::prelude::*;
+use strum::IntoEnumIterator;
+use tailwind_fuse::*;
+
+#[derive(TwClass)]
+#[tw(class = "cursor-pointer")]
+struct Variant {
+    active: VariantActive,
+}
+
+#[derive(TwVariant)]
+enum VariantActive {
+    #[tw(class = "font-bold")]
+    True,
+    #[tw(default, class = "")]
+    False,
+}
+impl From<bool> for VariantActive {
+    fn from(value: bool) -> Self {
+        match value {
+            true => VariantActive::True,
+            _ => VariantActive::False,
+        }
+    }
+}
 
 #[component]
 pub fn ThemeToggle() -> impl IntoView {
-    let mode = use_context::<RwSignal<ColorMode>>()
-        .expect("ColorMode signal should be provided in context");
+    let (theme, set_theme) = use_theme();
 
-    let toggle_mode = move |_| {
-        mode.update(|current| {
-            *current = match current {
-                ColorMode::Light => ColorMode::Dark,
-                ColorMode::Dark => ColorMode::Light,
-            }
-        });
+    let toggle_mode = move |mode: ColorMode| {
+        set_theme.set(Some(mode));
     };
 
-    view! {
-        <button class="theme-toggle" on:click=toggle_mode>
-            {move || match mode.get() {
-                ColorMode::Light => "Color mode: Light",
-                ColorMode::Dark => "Color mode: Dark",
-            }}
-        </button>
-    }
+    let mode_views = ColorMode::iter()
+        .map(|color| {
+            let class = ArcMemo::new(move |_| {
+                let var = Variant {
+                    active: (theme.get() == Some(color)).into(),
+                };
+                var.to_class()
+            });
+            view! {
+                <span class=class on:click=move |_| toggle_mode(color)>
+                    {color.to_string()}
+                </span>
+            }
+        })
+        .collect_view();
+
+    view! { <div class="flex gap-1">{mode_views}</div> }
 }

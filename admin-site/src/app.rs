@@ -7,6 +7,7 @@ use crate::{
         HomePage,
     },
     ui::nav_bar::NavBar,
+    utils::hooks::use_theme::use_theme,
 };
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, Html, MetaTags, Stylesheet, Title};
@@ -36,30 +37,17 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     }
 }
 
-// TODO: migrate/move
-#[derive(Debug, Clone, Copy)]
-pub enum ColorMode {
-    Light,
-    Dark,
-}
-
 // @see https://github.com/leptos-rs/leptos/discussions/3399#discussioncomment-11645140
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 
-    let mode = RwSignal::new(ColorMode::Light);
-    provide_context(mode);
+    let (theme, _) = use_theme();
+    let class = move || theme.get().map(|e| e.to_string()).unwrap_or_default();
 
     view! {
-        <Html
-            attr:lang="en"
-            attr:class=move || match mode.get() {
-                ColorMode::Light => "light",
-                ColorMode::Dark => "dark",
-            }
-        />
+        <Html attr:lang="en" attr:class=class />
 
         // sets the document title
         <Title text="Welcome to Leptos" />
