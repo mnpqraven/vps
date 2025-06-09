@@ -3,7 +3,9 @@ use crate::utils::filename_resolve::first_legit_file;
 use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
 use serde::Serialize;
+use std::fs;
 use std::fs::read_to_string;
+use std::path::PathBuf;
 use tracing::instrument;
 
 pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
@@ -29,6 +31,19 @@ pub struct EnvSchemaDatabase {
     password: String,
     database_entrypoint: String,
     blob_storage_path: String,
+}
+
+impl EnvSchemaDatabase {
+    pub fn blob_storage(&self) -> Result<PathBuf, EnvError> {
+        let maybe_path = self.blob_storage_path.clone();
+
+        match fs::create_dir_all(&maybe_path).is_err() {
+            true => Err(EnvError::FileNotFound(format!(
+                "blob storage folder: {maybe_path}"
+            ))),
+            false => Ok(maybe_path.into()),
+        }
+    }
 }
 
 impl EnvSchema {

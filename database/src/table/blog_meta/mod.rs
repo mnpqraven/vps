@@ -1,3 +1,5 @@
+use std::fs;
+
 use crate::{DbError, utils::time::now};
 use proto_types::{
     blog::meta::{BlogMeta, BlogMetaShape},
@@ -71,7 +73,7 @@ impl BlogMetaDb {
         .fetch_one(conn)
         .await?;
 
-        // TODO: create the markdown file as well
+        create_markdown_file(&payload.file_name).await?;
 
         Ok(data)
     }
@@ -118,4 +120,18 @@ impl BlogMetaDb {
 
         Ok(id)
     }
+}
+
+#[instrument(ret)]
+async fn create_markdown_file(filename: &str) -> Result<(), DbError> {
+    // TODO: content from frontend (str or formdata binary)
+    let file_content = "a random blog post";
+
+    let env = load_env::EnvSchema::load()?;
+    let path = env.database.blob_storage()?;
+    let path = path.join(filename);
+
+    fs::write(path, file_content)?;
+
+    Ok(())
 }

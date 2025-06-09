@@ -5,43 +5,54 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use proto_types::{
     blog::meta::{BlogMeta, BlogMetaList},
-    common::db::Pagination,
+    common::db::{Id, Pagination},
     impls::DefaultState,
 };
 
 use crate::ui::{
     back_button::BackButton,
     primitive::{
-        button::Button,
+        button::{Button, ButtonLook},
         table::{ColumnDefs, Table},
     },
 };
 
 #[component]
 pub fn DatabaseTableBlogPage() -> impl IntoView {
+    let action = ServerAction::<DeleteBlog>::new();
+    provide_context(action);
+
+    // TODO: own module in utils
     // TODO: dynamic params
     let (pagination, set_pagination) = signal(Pagination::default_state());
     let (pending, set_pending) = signal(false);
 
-    let async_data = Resource::new(move || pagination.get(), get_blog_metas);
+    let async_data = Resource::new(
+        move || (pagination.get(), action.version().get()),
+        |(pg, _)| get_blog_metas(pg),
+    );
 
     let defs = ColumnDefs::<BlogMeta>::new()
         .col("ID", |row| row.id.clone().into_any())
         .col("Title", |row| row.title.clone().into_any())
-        .col("Published", |row| row.is_publish.into_any());
+        .col("Published", |row| row.is_publish.into_any())
+        .col("", |row| {
+            let id = row.id.clone();
+            view! { <TableAction id /> }.into_any()
+        });
 
     let table_view = move || {
         async_data.get().map(|result| {
-            let req = result.unwrap();
-            let defs = defs.clone();
-            view! { <Table data=req.data column_defs=defs /> }
+            let data = result.unwrap().data;
+            let column_defs = defs.clone();
+            view! { <Table data column_defs /> }
         })
     };
 
     let on_prev = move |_| {
         set_pagination.update(|prev| {
             if prev.page_index >= 1 {
-                prev.page_index -= 1
+                prev.page_index -= 1;
             }
         })
     };
@@ -70,6 +81,34 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
                 {table_view}
             </Transition>
         </div>
+    }
+}
+
+#[component]
+fn TableAction(id: String) -> impl IntoView {
+    let action = use_context::<ServerAction<DeleteBlog>>().expect("provided delete action");
+
+    let on_delete = move |_| {
+        action.dispatch(id.clone().into());
+    };
+
+    view! {
+        <div class="flex gap-2">
+            <Button look=ButtonLook::Outline.into() on:click=on_delete>
+                "Delete"
+            </Button>
+        </div>
+    }
+}
+
+#[server]
+async fn delete_blog(id: String) -> Result<(), ServerFnError> {
+    use crate::state::ctx;
+    use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
+    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    match rpc.delete(Id { id }).await {
+        Ok(_) => Ok(()),
+        Err(status) => Err(ServerFnError::new(status.to_string())),
     }
 }
 

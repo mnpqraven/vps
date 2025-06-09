@@ -7,7 +7,7 @@ pub fn CreateBlogPage() -> impl IntoView {
     view! {
         <div class="flex flex-col gap-4">
             <BackButton />
-            // TODO: form
+        // TODO: form
         </div>
     }
 }

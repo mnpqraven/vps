@@ -18,7 +18,7 @@ pub mod tables;
 pub fn DatabasePage() -> impl IntoView {
     let services: Vec<ServiceItem> = vec![ServiceItem::new("Database")
         .service(SubService::new("Tables", "/database/tables"))
-        .service(SubService::new("FHS Storge", "/database/fhs"))
+        .service(SubService::new("FHS Storage", "/database/fhs"))
         .service(SubService::new("Health", "/database/health"))];
 
     let service_card_views = services
