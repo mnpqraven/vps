@@ -1,4 +1,5 @@
 pub mod database;
+pub mod not_found;
 pub mod service_types;
 
 use crate::ui::primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle};

@@ -4,6 +4,7 @@ use crate::{
             tables::{blog_tag::DatabaseTableBlogTagPage, DatabaseTablePage},
             DatabasePage,
         },
+        not_found::NotFound,
         HomePage,
     },
     ui::nav_bar::NavBar,
@@ -57,7 +58,7 @@ pub fn App() -> impl IntoView {
             <NavBar />
 
             <main class="container mx-auto pt-6">
-                <Routes fallback=|| "Page not found.".into_view()>
+                <Routes fallback=NotFound>
                     <Route path=path!("/") view=HomePage />
                     <Route path=path!("/database") view=DatabasePage />
                     <Route path=path!("/database/tables") view=DatabaseTablePage />
