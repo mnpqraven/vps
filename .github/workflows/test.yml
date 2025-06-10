@@ -1,9 +1,14 @@
-name: lint
+name: test
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 jobs:
-  lint:
+  test:
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,4 +25,5 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: arduino/setup-protoc@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo check
+      - run: cargo test
+
