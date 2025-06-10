@@ -21,7 +21,7 @@
         };
         rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
           PORT=5005
-          ${pkgs.grpcui}/bin/grpcui -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
+          ${pkgs.grpcui}/bin/grpcui -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
         '';
         layout = pkgs.writeShellScriptBin "layout" ''
           ${pkgs.zellij}/bin/zellij -l .zellij/servers.kdl
