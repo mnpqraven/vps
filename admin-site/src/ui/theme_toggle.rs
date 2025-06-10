@@ -1,4 +1,4 @@
-use crate::utils::hooks::use_theme::{use_theme, ColorMode};
+use crate::utils::hooks::use_theme::{ColorMode, use_theme};
 use leptos::prelude::*;
 use strum::IntoEnumIterator;
 use tailwind_fuse::*;
@@ -36,9 +36,12 @@ pub fn ThemeToggle() -> impl IntoView {
     let mode_views = ColorMode::iter()
         .map(|color| {
             let class = ArcMemo::new(move |_| {
-                let var = Variant {
-                    active: (theme.get() == Some(color)).into(),
-                };
+                let active = match color {
+                    ColorMode::System if theme.get().is_none() => true,
+                    color => theme.get() == Some(color),
+                }
+                .into();
+                let var = Variant { active };
                 var.to_class()
             });
             view! {

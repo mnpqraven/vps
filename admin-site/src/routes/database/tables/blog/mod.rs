@@ -1,14 +1,13 @@
 pub mod create;
 pub mod update;
 
-use crate::ui::{
-    back_button::BackButton,
-    primitive::{
-        button::{Button, ButtonLook},
-        table::{ColumnDefs, Table},
-    },
+use crate::ui::back_button::BackButton;
+use crate::ui::primitive::{
+    button::{Button, ButtonLook},
+    table::{ColumnDefs, Table},
 };
-use crate::utils::pagination::{PaginationState, use_pagination};
+use crate::utils::pagination::PaginationButton;
+use crate::utils::pagination::{PaginationDirection, PaginationState, use_pagination};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use proto_types::{
@@ -21,11 +20,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
     let action = ServerAction::<DeleteBlog>::new();
     provide_context(action);
 
-    let PaginationState {
-        pagination: pg,
-        prev_params,
-        next_params,
-    } = use_pagination();
+    let PaginationState { pagination: pg, .. } = use_pagination();
     let (pending, set_pending) = signal(false);
 
     let async_data = Resource::new(
@@ -33,7 +28,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
         |(pg, _)| get_blog_metas(pg),
     );
 
-    let defs = ColumnDefs::<BlogMeta>::new()
+    let column_defs = ColumnDefs::<BlogMeta>::new()
         .col("ID", |row| row.id.clone().into_any())
         .col("Title", |row| row.title.clone().into_any())
         .col("Published", |row| row.is_publish.into_any())
@@ -45,8 +40,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
     let table_view = move || {
         async_data.get().map(|result| {
             let data = result.unwrap().data;
-            let column_defs = defs.clone();
-            view! { <Table data column_defs /> }
+            view! { <Table data column_defs=column_defs.clone() /> }
         })
     };
 
@@ -55,8 +49,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
             <div class="flex gap-4 items-center">
                 <BackButton />
                 <A href="/database/tables/blog/create">
-                    // TODO: into() conversion
-                    <Button class="ml-auto".into()>New</Button>
+                    <Button class="ml-auto">New</Button>
                 </A>
                 <Show when=pending>
                     <p>"Loading..."</p>
@@ -64,19 +57,12 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
             </div>
 
             <div class="flex gap-2 items-center">
-                // TODO: query serialize helper fn
-                <A href=move || format!("?{}", prev_params.get())>
-                    <Button>"prev"</Button>
-                </A>
+                <PaginationButton pagination=pg direction=PaginationDirection::Prev />
                 <span>Page {move || pg.get().page_index + 1}</span>
-                <A href=move || format!("?{}", next_params.get())>
-                    <Button>"next"</Button>
-                </A>
+                <PaginationButton pagination=pg direction=PaginationDirection::Next />
             </div>
 
-            <Transition set_pending fallback=move || view! { <p>"Loading initial..."</p> }>
-                {table_view}
-            </Transition>
+            <Transition set_pending>{table_view}</Transition>
         </div>
     }
 }
@@ -91,7 +77,7 @@ fn TableAction(id: String) -> impl IntoView {
 
     view! {
         <div class="flex gap-2">
-            <Button look=ButtonLook::Outline.into() on:click=on_delete>
+            <Button look=ButtonLook::Outline on:click=on_delete>
                 "Delete"
             </Button>
         </div>

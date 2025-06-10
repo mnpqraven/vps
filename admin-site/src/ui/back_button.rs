@@ -20,7 +20,7 @@ pub fn BackButton() -> impl IntoView {
     };
 
     view! {
-        <Button on:click=on_back look=ButtonLook::Secondary.into()>
+        <Button on:click=on_back look=ButtonLook::Secondary>
             "Back"
         </Button>
     }

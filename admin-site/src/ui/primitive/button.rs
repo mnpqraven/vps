@@ -45,9 +45,9 @@ pub enum ButtonLook {
 
 #[component]
 pub fn Button(
-    #[prop(optional)] look: Signal<ButtonLook>,
-    #[prop(optional)] size: Signal<ButtonSize>,
-    #[prop(optional)] class: Signal<String>,
+    #[prop(optional, into)] look: Signal<ButtonLook>,
+    #[prop(optional, into)] size: Signal<ButtonSize>,
+    #[prop(optional, into)] class: Signal<String>,
     children: Children,
 ) -> impl IntoView {
     let class = ArcMemo::new(move |_| {

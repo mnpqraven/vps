@@ -1,6 +1,26 @@
-use leptos::prelude::*;
-use leptos_router::hooks::use_query_map;
+use leptos::{attr::any_attribute::AnyAttribute, prelude::*};
+use leptos_router::params::Params;
+use leptos_router::{components::A, hooks::use_query};
 use proto_types::{common::db::Pagination, impls::DefaultState};
+use strum::{Display, EnumString};
+
+use crate::ui::primitive::button::Button;
+
+#[derive(Clone, Copy, Params, PartialEq)]
+struct PaginationQuery {
+    index: Option<i32>,
+    size: Option<i32>,
+}
+
+impl From<&PaginationQuery> for Pagination {
+    fn from(PaginationQuery { index, size }: &PaginationQuery) -> Self {
+        let default = Pagination::default_state();
+        Self {
+            page_index: index.unwrap_or(default.page_index),
+            page_size: size.unwrap_or(default.page_size),
+        }
+    }
+}
 
 pub struct PaginationState {
     pub pagination: Signal<Pagination>,
@@ -8,31 +28,23 @@ pub struct PaginationState {
     pub next_params: Signal<String>,
 }
 pub fn use_pagination() -> PaginationState {
-    let query = use_query_map();
-    let default = Pagination::default_state();
-    let pagination = Signal::derive(move || {
-        let page_index = query
-            .read()
-            .get("index")
-            .map(|e| e.parse::<i32>().unwrap_or(default.page_index))
-            .unwrap_or(default.page_index);
-        let page_size = query
-            .read()
-            .get("size")
-            .map(|e| e.parse::<i32>().unwrap_or(default.page_size))
-            .unwrap_or(default.page_size);
+    let query = use_query::<PaginationQuery>();
 
-        Pagination {
-            page_index,
-            page_size,
-        }
+    let default = Pagination::default_state();
+    let pagination: Signal<Pagination> = Signal::derive(move || {
+        query
+            .read()
+            .as_ref()
+            .ok()
+            .map(Into::into)
+            .unwrap_or(default)
     });
 
     let prev_params = Signal::derive(move || {
         let i = pagination.get().page_index - 1;
         match i > 0 {
             true => format!("index={i}"),
-            false => format!("index=0"),
+            false => String::new(),
         }
     });
     let next_params = Signal::derive(move || {
@@ -44,5 +56,35 @@ pub fn use_pagination() -> PaginationState {
         pagination,
         prev_params,
         next_params,
+    }
+}
+
+#[derive(Debug, EnumString, Display, Clone)]
+#[strum(ascii_case_insensitive)]
+pub enum PaginationDirection {
+    Prev,
+    Next,
+}
+#[component]
+pub fn PaginationButton(
+    #[prop(into)] direction: Signal<PaginationDirection>,
+    pagination: Signal<Pagination>,
+    #[prop(optional)] attr: Vec<AnyAttribute>,
+) -> impl IntoView {
+    let params = Signal::derive(move || {
+        let i = pagination.get().page_index;
+        match direction.get() {
+            PaginationDirection::Prev => match i > 0 {
+                true => format!("index={}", i - 1),
+                false => String::new(),
+            },
+            PaginationDirection::Next => format!("index={}", i + 1),
+        }
+    });
+
+    view! {
+        <A href=move || format!("?{}", params.get())>
+            <Button {..attr}>{direction.with(ToString::to_string)}</Button>
+        </A>
     }
 }
