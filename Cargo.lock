@@ -21,6 +21,7 @@ checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
 name = "admin-site"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "axum",
  "console_error_panic_hook",
  "leptos",
@@ -33,6 +34,7 @@ dependencies = [
  "serde",
  "strum",
  "tailwind_fuse",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
  "tracing-subscriber",

@@ -106,19 +106,21 @@ impl BlogMetaDb {
 
     #[instrument(skip(conn), ret)]
     pub async fn delete(conn: &Db, id: &str) -> Result<Id, DbError> {
-        let id = sqlx::query_as!(
-            Id,
+        let deleted = sqlx::query_as!(
+            BlogMeta,
             "
             DELETE FROM blog_meta
             WHERE id = $1
-            RETURNING id
+            RETURNING *
             ",
             id
         )
         .fetch_one(conn)
         .await?;
 
-        Ok(id)
+        delete_markdown_file(&deleted.file_name).await?;
+
+        Ok(Id { id: deleted.id })
     }
 }
 
@@ -132,6 +134,17 @@ async fn create_markdown_file(filename: &str) -> Result<(), DbError> {
     let path = path.join(filename);
 
     fs::write(path, file_content)?;
+
+    Ok(())
+}
+
+#[instrument(ret)]
+async fn delete_markdown_file(filename: &str) -> Result<(), DbError> {
+    let env = load_env::EnvSchema::load()?;
+    let path = env.database.blob_storage()?;
+    let path = path.join(filename);
+
+    fs::remove_file(path)?;
 
     Ok(())
 }

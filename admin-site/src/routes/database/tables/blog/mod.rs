@@ -5,7 +5,7 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use proto_types::{
     blog::meta::{BlogMeta, BlogMetaList},
-    common::db::{Id, Pagination},
+    common::db::Pagination,
     impls::DefaultState,
 };
 
@@ -105,6 +105,8 @@ fn TableAction(id: String) -> impl IntoView {
 async fn delete_blog(id: String) -> Result<(), ServerFnError> {
     use crate::state::ctx;
     use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
+    use proto_types::common::db::Id;
+
     let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
     match rpc.delete(Id { id }).await {
         Ok(_) => Ok(()),

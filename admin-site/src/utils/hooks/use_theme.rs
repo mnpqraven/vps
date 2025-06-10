@@ -5,7 +5,16 @@ use serde::{Deserialize, Serialize};
 use strum::{EnumIter, EnumString};
 
 #[derive(
-    Clone, Copy, Default, Serialize, Deserialize, EnumString, strum::Display, EnumIter, PartialEq,
+    Clone,
+    Copy,
+    Default,
+    Serialize,
+    Deserialize,
+    EnumString,
+    strum::Display,
+    EnumIter,
+    PartialEq,
+    Debug,
 )]
 #[strum(serialize_all = "lowercase")]
 pub enum ColorMode {

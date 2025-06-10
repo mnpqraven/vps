@@ -23,6 +23,8 @@ tracing-subscriber.workspace = true
 tailwind_fuse = { version = "0.3.2", features = ["variant"] }
 leptos-use = "0.16.0-beta2"
 strum = { version = "0.27.1", features = ["derive"] }
+thiserror.workspace = true
+anyhow.workspace = true
 
 [features]
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook", "dep:wasm-bindgen"]

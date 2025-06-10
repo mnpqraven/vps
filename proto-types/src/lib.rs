@@ -2,6 +2,8 @@
 
 pub mod impls;
 
+pub use tonic::Status;
+
 pub const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
 tonic::include_proto!("helloworld");

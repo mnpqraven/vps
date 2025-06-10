@@ -2,7 +2,7 @@ use crate::utils::error::RpcError;
 use database::table::blog_meta::BlogMetaDb;
 use proto_types::{
     blog::meta::{
-        blog_meta_service_server::BlogMetaService, BlogMeta, BlogMetaList, BlogMetaShape,
+        BlogMeta, BlogMetaList, BlogMetaShape, blog_meta_service_server::BlogMetaService,
     },
     common::db::{Id, Pagination},
 };
@@ -35,6 +35,7 @@ impl BlogMetaService for BlogMetaRpc {
             .map_err(RpcError::db_with_context(id))?;
         Ok(Response::new(data))
     }
+    // TODO: filename conflict check
     async fn create(&self, request: Request<BlogMetaShape>) -> Result<Response<BlogMeta>, Status> {
         let req = request.into_inner();
         let data = BlogMetaDb::create(&self.conn, &req)
@@ -43,6 +44,7 @@ impl BlogMetaService for BlogMetaRpc {
             .unwrap();
         Ok(Response::new(data))
     }
+    // TODO: filename conflict check
     async fn update(&self, request: Request<BlogMeta>) -> Result<Response<BlogMeta>, Status> {
         let req = &request.into_inner();
         let data = BlogMetaDb::update(&self.conn, &req.id, &req.clone().into_shape())
