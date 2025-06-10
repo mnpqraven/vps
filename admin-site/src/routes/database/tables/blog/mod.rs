@@ -1,14 +1,6 @@
 pub mod create;
 pub mod update;
 
-use leptos::prelude::*;
-use leptos_router::components::A;
-use proto_types::{
-    blog::meta::{BlogMeta, BlogMetaList},
-    common::db::Pagination,
-    impls::DefaultState,
-};
-
 use crate::ui::{
     back_button::BackButton,
     primitive::{
@@ -16,19 +8,28 @@ use crate::ui::{
         table::{ColumnDefs, Table},
     },
 };
+use crate::utils::pagination::{PaginationState, use_pagination};
+use leptos::prelude::*;
+use leptos_router::components::A;
+use proto_types::{
+    blog::meta::{BlogMeta, BlogMetaList},
+    common::db::Pagination,
+};
 
 #[component]
 pub fn DatabaseTableBlogPage() -> impl IntoView {
     let action = ServerAction::<DeleteBlog>::new();
     provide_context(action);
 
-    // TODO: own module in utils
-    // TODO: dynamic params
-    let (pagination, set_pagination) = signal(Pagination::default_state());
+    let PaginationState {
+        pagination: pg,
+        prev_params,
+        next_params,
+    } = use_pagination();
     let (pending, set_pending) = signal(false);
 
     let async_data = Resource::new(
-        move || (pagination.get(), action.version().get()),
+        move || (pg.get(), action.version().get()),
         |(pg, _)| get_blog_metas(pg),
     );
 
@@ -49,32 +50,28 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
         })
     };
 
-    let on_prev = move |_| {
-        set_pagination.update(|prev| {
-            if prev.page_index >= 1 {
-                prev.page_index -= 1;
-            }
-        })
-    };
-    let on_next = move |_| set_pagination.update(|prev| prev.page_index += 1);
-
     view! {
         <div class="flex flex-col gap-4 p-4">
             <div class="flex gap-4 items-center">
                 <BackButton />
-                <Show when=pending>
-                    <p>"Loading..."</p>
-                </Show>
                 <A href="/database/tables/blog/create">
                     // TODO: into() conversion
                     <Button class="ml-auto".into()>New</Button>
                 </A>
+                <Show when=pending>
+                    <p>"Loading..."</p>
+                </Show>
             </div>
 
             <div class="flex gap-2 items-center">
-                <Button on:click=on_prev>"prev"</Button>
-                <span>Page {move || pagination.get().page_index + 1}</span>
-                <Button on:click=on_next>"next"</Button>
+                // TODO: query serialize helper fn
+                <A href=move || format!("?{}", prev_params.get())>
+                    <Button>"prev"</Button>
+                </A>
+                <span>Page {move || pg.get().page_index + 1}</span>
+                <A href=move || format!("?{}", next_params.get())>
+                    <Button>"next"</Button>
+                </A>
             </div>
 
             <Transition set_pending fallback=move || view! { <p>"Loading initial..."</p> }>
