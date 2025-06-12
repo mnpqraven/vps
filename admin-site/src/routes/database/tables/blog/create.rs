@@ -1,4 +1,10 @@
-use crate::ui::back_button::BackButton;
+use crate::ui::{
+    back_button::BackButton,
+    primitive::{
+        button::Button,
+        form::{FormCheckbox, FormInput},
+    },
+};
 use leptos::prelude::*;
 
 #[component]
@@ -16,27 +22,29 @@ pub fn MetaForm() -> impl IntoView {
     let action = ServerAction::<CreateBlog>::new();
     // holds the latest *returned* value from the server
     let value = action.value();
-    // check if the server has returned an error
-    let _has_error = move || value.with(|val| matches!(val, Some(Err(_))));
+    let error = move || {
+        let v = value.get();
+        match v {
+            Some(Err(err)) => format!("{err}"),
+            _ => String::new(),
+        }
+    };
 
     view! {
-        <ActionForm action>
-            <div class="flex flex-col gap-4">
-                <label>
-                    "Title"<input class="border" type="text" name="title" autocomplete="off" />
-                </label>
-                <label>
-                    "File name"
-                    <input class="border" type="text" name="file_name" autocomplete="off" />
-                </label>
-                <label>
-                    "Publish"
-                    <input class="border" type="checkbox" name="is_publish" value="true" />
-                </label>
+        <ErrorBoundary fallback=move |error| { move || format!("{:?}", error.get()) }>
+            // TODO human-readable error return
+            <pre>{error}</pre>
 
-                <input type="submit" />
-            </div>
-        </ActionForm>
+            <ActionForm action>
+                <div class="flex flex-col gap-4 w-fit items-start">
+                    <FormInput label="Title" field="title" />
+                    <FormInput label="File name" field="file_name" />
+                    <FormCheckbox label="Publish" field="is_publish" />
+
+                    <Button attr:r#type="submit">Create</Button>
+                </div>
+            </ActionForm>
+        </ErrorBoundary>
     }
 }
 
@@ -50,13 +58,13 @@ async fn create_blog(
     use proto_types::blog::meta::BlogMetaShape;
     use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
     let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
-    let payload = BlogMetaShape {
+
+    rpc.create(BlogMetaShape {
         title,
         file_name,
         is_publish,
-    };
-
-    rpc.create(payload).await?;
+    })
+    .await?;
 
     leptos_axum::redirect("/database/tables/blog");
     Ok(())

@@ -53,9 +53,9 @@ pub fn Table<T>(data: Vec<T>, column_defs: ColumnDefs<T>) -> impl IntoView {
             let cells = column_defs
                 .0
                 .iter()
-                .map(|def| view! { <td>{def.render_fn.run(data_row)}</td> })
+                .map(|def| view! { <td class="px-2 py-1">{def.render_fn.run(data_row)}</td> })
                 .collect_view();
-            view! { <tr>{cells}</tr> }
+            view! { <tr class="border-b">{cells}</tr> }
         })
         .collect_view();
 

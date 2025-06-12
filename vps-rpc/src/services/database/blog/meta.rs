@@ -35,21 +35,20 @@ impl BlogMetaService for BlogMetaRpc {
             .map_err(RpcError::db_with_context(id))?;
         Ok(Response::new(data))
     }
-    // TODO: filename conflict check
     async fn create(&self, request: Request<BlogMetaShape>) -> Result<Response<BlogMeta>, Status> {
         let req = request.into_inner();
         let data = BlogMetaDb::create(&self.conn, &req)
             .await
-            // FIXME: unwrap
-            .unwrap();
+            .map_err(RpcError::db_with_context(format!("{req:?}")))?;
+
         Ok(Response::new(data))
     }
-    // TODO: filename conflict check
     async fn update(&self, request: Request<BlogMeta>) -> Result<Response<BlogMeta>, Status> {
         let req = &request.into_inner();
         let data = BlogMetaDb::update(&self.conn, &req.id, &req.clone().into_shape())
             .await
-            .map_err(RpcError::db_with_context(&req.id))?;
+            .map_err(RpcError::db_with_context(format!("{req:?}")))?;
+
         Ok(Response::new(data))
     }
     async fn delete(&self, request: Request<Id>) -> Result<Response<Id>, Status> {
