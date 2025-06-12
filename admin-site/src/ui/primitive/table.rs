@@ -43,7 +43,7 @@ pub fn Table<T>(data: Vec<T>, column_defs: ColumnDefs<T>) -> impl IntoView {
         .0
         .iter()
         .map(|def| {
-            template! { <th>{def.header.clone()}</th> }
+            view! { <th>{def.header.clone()}</th> }
         })
         .collect_view();
 
@@ -55,7 +55,7 @@ pub fn Table<T>(data: Vec<T>, column_defs: ColumnDefs<T>) -> impl IntoView {
                 .iter()
                 .map(|def| view! { <td class="px-2 py-1">{def.render_fn.run(data_row)}</td> })
                 .collect_view();
-            template! { <tr class="border-b">{cells}</tr> }
+            view! { <tr class="border-b">{cells}</tr> }
         })
         .collect_view();
 
