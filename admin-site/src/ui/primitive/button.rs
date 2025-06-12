@@ -1,4 +1,4 @@
-use leptos::{attr::any_attribute::AnyAttribute, prelude::*};
+use leptos::prelude::*;
 use tailwind_fuse::*;
 
 #[derive(TwClass)]
@@ -49,7 +49,6 @@ pub fn Button(
     #[prop(optional, into)] size: Signal<ButtonSize>,
     #[prop(optional, into)] class: Signal<String>,
     children: Children,
-    #[prop(optional)] attr: Vec<AnyAttribute>,
 ) -> impl IntoView {
     let class = ArcMemo::new(move |_| {
         let look = look.get();
@@ -58,9 +57,5 @@ pub fn Button(
         button.with_class(class.get())
     });
 
-    view! {
-        <button {..attr} class=class>
-            {children()}
-        </button>
-    }
+    view! { <button class=class>{children()}</button> }
 }
