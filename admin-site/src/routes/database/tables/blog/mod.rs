@@ -32,6 +32,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
     let column_defs = ColumnDefs::<BlogMeta>::new()
         .col("ID", |row| row.id.clone().into_any())
         .col("Title", |row| row.title.clone().into_any())
+        .col("File name", |row| row.file_name.clone().into_any())
         .col("Published", |row| row.is_publish.into_any())
         .col("", |row| {
             let id = row.id.clone();
