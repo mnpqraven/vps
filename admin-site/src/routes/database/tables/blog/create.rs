@@ -1,4 +1,10 @@
-use crate::ui::back_button::BackButton;
+use crate::ui::{
+    back_button::BackButton,
+    primitive::{
+        button::Button,
+        form::{FormCheckbox, FormInput},
+    },
+};
 use leptos::prelude::*;
 
 #[component]
@@ -21,20 +27,12 @@ pub fn MetaForm() -> impl IntoView {
 
     view! {
         <ActionForm action>
-            <div class="flex flex-col gap-4">
-                <label>
-                    "Title"<input class="border" type="text" name="title" autocomplete="off" />
-                </label>
-                <label>
-                    "File name"
-                    <input class="border" type="text" name="file_name" autocomplete="off" />
-                </label>
-                <label>
-                    "Publish"
-                    <input class="border" type="checkbox" name="is_publish" value="true" />
-                </label>
+            <div class="flex flex-col gap-4 w-fit items-start">
+                <FormInput label="Title" field="title" />
+                <FormInput label="File name" field="file_name" />
+                <FormCheckbox label="Publish" field="is_publish" />
 
-                <input type="submit" />
+                <Button attr:r#type="submit">Create</Button>
             </div>
         </ActionForm>
     }

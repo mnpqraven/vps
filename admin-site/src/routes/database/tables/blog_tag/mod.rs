@@ -1,6 +1,3 @@
-pub mod create;
-pub mod update;
-
 use crate::ui::back_button::BackButton;
 use crate::ui::loading::Loading;
 use crate::ui::primitive::{
@@ -12,13 +9,13 @@ use crate::utils::pagination::{PaginationDirection, PaginationState, use_paginat
 use leptos::prelude::*;
 use leptos_router::components::A;
 use proto_types::{
-    blog::meta::{BlogMeta, BlogMetaList},
+    blog::tag::{BlogTag, BlogTagList},
     common::db::Pagination,
 };
 
 #[component]
-pub fn DatabaseTableBlogPage() -> impl IntoView {
-    let action = ServerAction::<DeleteBlog>::new();
+pub fn DatabaseTableBlogTagPage() -> impl IntoView {
+    let action = ServerAction::<DeleteTag>::new();
     provide_context(action);
 
     let PaginationState { pagination, .. } = use_pagination();
@@ -26,13 +23,13 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
 
     let async_data = Resource::new(
         move || (pagination.get(), action.version().get()),
-        |(pg, _)| get_blog_metas(pg),
+        |(pg, _)| get_blog_tags(pg),
     );
 
-    let column_defs = ColumnDefs::<BlogMeta>::new()
+    let column_defs = ColumnDefs::<BlogTag>::new()
         .col("ID", |row| row.id.clone().into_any())
-        .col("Title", |row| row.title.clone().into_any())
-        .col("Published", |row| row.is_publish.into_any())
+        .col("Code", |row| row.code.clone().into_any())
+        .col("Label", |row| row.label.clone().into_any())
         .col("", |row| {
             let id = row.id.clone();
             view! { <TableAction id /> }.into_any()
@@ -41,8 +38,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
     let table_view = move || {
         async_data.get().map(|result| {
             let data = result.unwrap().data;
-            let column_defs = column_defs.clone();
-            view! { <Table data column_defs /> }
+            view! { <Table data column_defs=column_defs.clone() /> }
         })
     };
 
@@ -69,7 +65,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
 
 #[component]
 fn TableAction(id: String) -> impl IntoView {
-    let action = use_context::<ServerAction<DeleteBlog>>().expect("provided delete action");
+    let action = use_context::<ServerAction<DeleteTag>>().expect("provided delete action");
 
     let on_delete = move |_| {
         action.dispatch(id.clone().into());
@@ -85,12 +81,12 @@ fn TableAction(id: String) -> impl IntoView {
 }
 
 #[server]
-async fn delete_blog(id: String) -> Result<(), ServerFnError> {
+async fn delete_tag(id: String) -> Result<(), ServerFnError> {
     use crate::state::ctx;
-    use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
+    use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
     use proto_types::common::db::Id;
 
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
     match rpc.delete(Id { id }).await {
         Ok(_) => Ok(()),
         Err(status) => Err(ServerFnError::new(status.to_string())),
@@ -98,11 +94,11 @@ async fn delete_blog(id: String) -> Result<(), ServerFnError> {
 }
 
 #[server]
-async fn get_blog_metas(pagination: Pagination) -> Result<BlogMetaList, ServerFnError> {
+async fn get_blog_tags(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
     use crate::state::ctx;
-    use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
+    use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
 
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
 
     let res = rpc
         .list(pagination)
