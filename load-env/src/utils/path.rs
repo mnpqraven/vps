@@ -18,9 +18,7 @@ pub fn get_first_valid_dir() -> Option<PathBuf> {
 pub fn cargo_dir() -> Option<PathBuf> {
     if let Ok(cargo_dir) = std::env::var("CARGO_MANIFEST_DIR") {
         let crate_path = PathBuf::from(cargo_dir);
-        // FIXME: unwrap
-        let crate_path = crate_path.parent().unwrap().to_path_buf();
-        Some(crate_path)
+        crate_path.parent().map(|e| e.to_path_buf())
     } else {
         None
     }

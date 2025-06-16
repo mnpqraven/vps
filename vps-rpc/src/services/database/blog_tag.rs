@@ -1,6 +1,6 @@
 use database::table::blog_tag::BlogTagDb;
 use proto_types::{
-    blog::tag::{blog_tag_service_server::BlogTagService, BlogTag, BlogTagList, BlogTagShape},
+    blog::tag::{BlogTag, BlogTagList, BlogTagShape, blog_tag_service_server::BlogTagService},
     common::db::{Id, Pagination},
 };
 use sqlx::{Pool, Postgres};
@@ -45,8 +45,7 @@ impl BlogTagService for BlogTagRpc {
         let req = request.into_inner();
         let data = BlogTagDb::create(&self.conn, &req)
             .await
-            // FIXME: unwrap
-            .unwrap();
+            .map_err(RpcError::db_with_context(&req.code))?;
         Ok(Response::new(data))
     }
 
