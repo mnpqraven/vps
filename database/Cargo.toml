@@ -26,3 +26,6 @@ anyhow.workspace = true
 uuid = { version = "1.17.0", features = ["v7"] }
 proto-types = { path = "../proto-types" }
 chrono = "0.4.41"
+
+[dev-dependencies]
+serial_test = "3.2.0"

@@ -6,18 +6,26 @@ use strum::{Display, EnumString};
 
 use crate::ui::primitive::button::Button;
 
-#[derive(Clone, Copy, Params, PartialEq)]
+#[derive(Clone, Params, PartialEq)]
 struct PaginationQuery {
     index: Option<i32>,
     size: Option<i32>,
+    search: Option<String>,
 }
 
 impl From<&PaginationQuery> for Pagination {
-    fn from(PaginationQuery { index, size }: &PaginationQuery) -> Self {
+    fn from(
+        PaginationQuery {
+            index,
+            size,
+            search,
+        }: &PaginationQuery,
+    ) -> Self {
         let default = Pagination::default_state();
         Self {
             page_index: index.unwrap_or(default.page_index),
             page_size: size.unwrap_or(default.page_size),
+            search: search.clone().unwrap_or_default(),
         }
     }
 }
@@ -37,7 +45,7 @@ pub fn use_pagination() -> PaginationState {
             .as_ref()
             .ok()
             .map(Into::into)
-            .unwrap_or(default)
+            .unwrap_or(default.clone())
     });
 
     let prev_params = Signal::derive(move || {

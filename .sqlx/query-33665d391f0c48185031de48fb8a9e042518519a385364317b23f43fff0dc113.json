@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT *\n            FROM blog_tag\n            LIMIT $1 OFFSET $2\n            ",
+  "query": "\n                    SELECT * \n                    FROM blog_meta\n                    WHERE similarity(title, $3) >= 0.4\n                    ORDER BY similarity(title, $3) DESC\n                    LIMIT $1 OFFSET $2\n                ",
   "describe": {
     "columns": [
       {
@@ -10,21 +10,26 @@
       },
       {
         "ordinal": 1,
-        "name": "code",
+        "name": "title",
         "type_info": "Varchar"
       },
       {
         "ordinal": 2,
-        "name": "label",
+        "name": "file_name",
         "type_info": "Varchar"
       },
       {
         "ordinal": 3,
+        "name": "is_publish",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
         "name": "created_at",
         "type_info": "Int8"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "updated_at",
         "type_info": "Int8"
       }
@@ -32,7 +37,8 @@
     "parameters": {
       "Left": [
         "Int8",
-        "Int8"
+        "Int8",
+        "Text"
       ]
     },
     "nullable": [
@@ -40,8 +46,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "f2ecb64fff88353abb4487e21a79f4f3c653db2bc377ce92d2c74ffae124d22c"
+  "hash": "33665d391f0c48185031de48fb8a9e042518519a385364317b23f43fff0dc113"
 }
