@@ -1,3 +1,7 @@
+use std::fs;
+
+use super::blog_meta::BlogMetaDb;
+use crate::{DbError, utils::common_structs::Db};
 use proto_types::{
     blog::{
         meta::{BlogMeta, BlogMetaShape},
@@ -5,24 +9,24 @@ use proto_types::{
     },
     derived::blog::Blog,
 };
-use sqlx::{Pool, Postgres, QueryBuilder};
-
-use crate::DbError;
-
-use super::blog_meta::BlogMetaDb;
-
-type Db = Pool<Postgres>;
+use sqlx::{Postgres, QueryBuilder};
+use tracing::instrument;
 
 pub struct BlogDb;
 
 impl BlogDb {
+    // TODO: rpc to replace meta
+    // meta won't be public in rpc endpoint
     pub async fn create(
         conn: &Db,
         meta_shape: &BlogMetaShape,
         tag_ids: Vec<&str>,
+        file_content: String,
     ) -> Result<(), DbError> {
         // insert meta (left)
         let created = BlogMetaDb::create(conn, meta_shape).await?;
+
+        create_markdown_file(&meta_shape.file_name, file_content).await?;
 
         // insert mapping (left right)
         let mut query_builder: QueryBuilder<Postgres> =
@@ -78,6 +82,13 @@ impl BlogDb {
             content,
         })
     }
+
+    // TODO:
+    // - return type
+    // - delete file as well
+    pub async fn delete() -> Result<(), DbError> {
+        Ok(())
+    }
 }
 
 async fn read_markdown_file(filename: &str) -> Result<String, DbError> {
@@ -87,4 +98,27 @@ async fn read_markdown_file(filename: &str) -> Result<String, DbError> {
 
     let content = std::fs::read_to_string(path)?;
     Ok(content)
+}
+
+// TODO: standalone module
+#[instrument(ret)]
+pub async fn create_markdown_file(filename: &str, content: String) -> Result<(), DbError> {
+    let env = load_env::EnvSchema::load()?;
+    let path = env.database.blob_storage()?;
+    let path = path.join(filename);
+
+    fs::write(path, content)?;
+
+    Ok(())
+}
+
+#[cfg(test)]
+#[serial_test::serial]
+mod tests {
+    use crate::DbError;
+
+    #[tokio::test]
+    async fn t1_list() -> Result<(), DbError> {
+        Ok(())
+    }
 }

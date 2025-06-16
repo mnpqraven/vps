@@ -1,15 +1,14 @@
-use std::fs;
-
-use crate::{DbError, utils::time::now};
+use crate::{
+    DbError,
+    utils::{common_structs::Db, time::now},
+};
 use proto_types::{
     blog::meta::{BlogMeta, BlogMetaShape},
     common::db::{Id, Pagination},
 };
-use sqlx::{Pool, Postgres};
+use std::fs;
 use tracing::instrument;
 use uuid::Uuid;
-
-type Db = Pool<Postgres>;
 
 pub struct BlogMetaDb {}
 
@@ -92,8 +91,6 @@ impl BlogMetaDb {
         .fetch_one(conn)
         .await?;
 
-        create_markdown_file(&payload.file_name).await?;
-
         Ok(data)
     }
 
@@ -158,20 +155,6 @@ impl BlogMetaDb {
     }
 }
 
-#[instrument(ret)]
-async fn create_markdown_file(filename: &str) -> Result<(), DbError> {
-    // TODO: content from frontend (str or formdata binary)
-    let file_content = "a random blog post";
-
-    let env = load_env::EnvSchema::load()?;
-    let path = env.database.blob_storage()?;
-    let path = path.join(filename);
-
-    fs::write(path, file_content)?;
-
-    Ok(())
-}
-
 async fn markdown_rename(old_filename: &str, new_filename: &str) -> Result<(), DbError> {
     let env = load_env::EnvSchema::load()?;
     let path = env.database.blob_storage()?;
@@ -197,10 +180,19 @@ async fn delete_markdown_file(filename: &str) -> Result<(), DbError> {
 mod tests {
     use proto_types::{blog::meta::BlogMetaShape, common::db::Pagination};
 
-    use crate::{DbError, get_db, table::blog_meta::BlogMetaDb};
+    use crate::{
+        DbError, get_db,
+        table::{blog::create_markdown_file, blog_meta::BlogMetaDb},
+    };
 
     #[tokio::test]
-    async fn blog_meta_1_no_row_pre_test() -> Result<(), DbError> {
+    async fn blog_meta_1_blanket_create_md_file() -> Result<(), DbError> {
+        create_markdown_file("__cargo_test_filename.md", "abitrary string content".into()).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn blog_meta_2_no_row_pre_test() -> Result<(), DbError> {
         let db = get_db().await?;
         let list = BlogMetaDb::list(
             &db,
@@ -218,7 +210,7 @@ mod tests {
 
     #[tokio::test]
     // TODO: missing check for file
-    async fn blog_meta_2_create() -> Result<(), DbError> {
+    async fn blog_meta_3_create() -> Result<(), DbError> {
         let db = get_db().await?;
         let act = BlogMetaDb::create(
             &db,
@@ -250,7 +242,7 @@ mod tests {
 
     #[tokio::test]
     // TODO: missing check for file
-    async fn blog_meta_3_update() -> Result<(), DbError> {
+    async fn blog_meta_4_update() -> Result<(), DbError> {
         let db = get_db().await?;
         let pg = Pagination {
             page_index: 0,
@@ -287,7 +279,7 @@ mod tests {
 
     #[tokio::test]
     // TODO: missing check for file
-    async fn blog_meta_4_delete() -> Result<(), DbError> {
+    async fn blog_meta_5_delete() -> Result<(), DbError> {
         let db = get_db().await?;
         let pg = Pagination {
             page_index: 0,
@@ -308,7 +300,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn blog_meta_5_cleanup() -> Result<(), DbError> {
+    async fn blog_meta_6_cleanup() -> Result<(), DbError> {
         let db = get_db().await?;
         let list = BlogMetaDb::list(
             &db,

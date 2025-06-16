@@ -1,15 +1,15 @@
-use crate::{DbError, utils::time::now};
+use crate::{
+    DbError,
+    utils::{common_structs::Db, time::now},
+};
 use proto_types::{
     blog::tag::{BlogTag, BlogTagShape},
     common::db::{Id, Pagination},
 };
-use sqlx::{Pool, Postgres};
 use tracing::instrument;
 use uuid::Uuid;
 
-type Db = Pool<Postgres>;
-
-pub struct BlogTagDb {}
+pub struct BlogTagDb;
 
 // TODO: return type on all fns
 impl BlogTagDb {
