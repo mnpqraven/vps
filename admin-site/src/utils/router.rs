@@ -1,7 +1,8 @@
 use strum::AsRefStr;
 use strum::Display;
+use strum::IntoStaticStr;
 
-#[derive(AsRefStr, Display, Debug)]
+#[derive(AsRefStr, IntoStaticStr, Display, Debug)]
 #[strum(prefix = "/", serialize_all = "snake_case")]
 pub enum RouterKey {
     #[strum(to_string = "")]
@@ -17,6 +18,8 @@ pub enum RouterKey {
     DatabaseTables,
     #[strum(to_string = "database/tables/blog")]
     DatabaseTablesBlog,
+    #[strum(to_string = "database/tables/blog/{0}")]
+    DatabaseTablesBlogDetail(String),
     #[strum(to_string = "database/tables/blog/create")]
     DatabaseTablesBlogCreate,
     #[strum(to_string = "database/tables/blog_tag")]

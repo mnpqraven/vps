@@ -31,8 +31,26 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
     );
 
     let column_defs = ColumnDefs::<BlogMeta>::new()
-        .col("ID", |row| row.id.clone().into_any())
-        .col("Title", |row| row.title.clone().into_any())
+        .col("ID", |row| {
+            let BlogMeta { id, .. } = row.clone();
+            let href = RouterKey::DatabaseTablesBlogDetail(id.clone()).to_string();
+            view! {
+                <A href>
+                    <span class="underline hover:no-underline">{id}</span>
+                </A>
+            }
+            .into_any()
+        })
+        .col("Title", |row| {
+            let BlogMeta { id, title, .. } = row.clone();
+            let href = RouterKey::DatabaseTablesBlogDetail(id).to_string();
+            view! {
+                <A href>
+                    <span class="underline hover:no-underline">{title}</span>
+                </A>
+            }
+            .into_any()
+        })
         .col("File name", |row| row.file_name.clone().into_any())
         .col("Published", |row| row.is_publish.into_any())
         .col("", |row| {

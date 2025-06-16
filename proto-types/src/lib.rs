@@ -1,5 +1,6 @@
 // @see https://github.com/hyperium/tonic/issues/1643
 
+pub mod derived;
 pub mod impls;
 
 pub use tonic::Status;

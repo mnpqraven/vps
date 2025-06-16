@@ -81,7 +81,7 @@ impl Default for EnvSchemaDatabase {
             user: "postgres".into(),
             password: "postgres".into(),
             database_entrypoint: "mydatabase".into(),
-            blob_storage_path: "~/.vps/data".into(),
+            blob_storage_path: "/home/othi/.vps/data".into(),
         }
     }
 }
