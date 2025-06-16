@@ -2,7 +2,10 @@ pub mod database;
 pub mod not_found;
 pub mod service_types;
 
-use crate::ui::primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle};
+use crate::{
+    ui::primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
+    utils::router::RouterKey,
+};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use service_types::{ServiceItem, SubService};
@@ -10,10 +13,12 @@ use service_types::{ServiceItem, SubService};
 /// Renders the home page of your application.
 #[component]
 pub fn HomePage() -> impl IntoView {
-    let services: Vec<ServiceItem> = vec![ServiceItem::new("Homelab")
-        .service(SubService::new("Database", "/database"))
-        .service(SubService::new("NAS", "/nas"))
-        .service(SubService::new("RPC Server", "/rpc-server"))];
+    let services: Vec<ServiceItem> = vec![
+        ServiceItem::new("Homelab")
+            .service(SubService::new("Database", RouterKey::Database))
+            .service(SubService::new("NAS", RouterKey::Nas))
+            .service(SubService::new("RPC Server", RouterKey::RpcServer)),
+    ];
 
     let service_card_views = services
         .into_iter()

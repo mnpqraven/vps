@@ -4,6 +4,7 @@ use crate::{
         back_button::BackButton,
         primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
     },
+    utils::router::RouterKey,
 };
 use leptos::prelude::*;
 use leptos_router::components::A;
@@ -16,10 +17,12 @@ pub mod tables;
 
 #[component]
 pub fn DatabasePage() -> impl IntoView {
-    let services: Vec<ServiceItem> = vec![ServiceItem::new("Database")
-        .service(SubService::new("Tables", "/database/tables"))
-        .service(SubService::new("FHS Storage", "/database/fhs"))
-        .service(SubService::new("Health", "/database/health"))];
+    let services: Vec<ServiceItem> = vec![
+        ServiceItem::new("Database")
+            .service(SubService::new("Tables", RouterKey::DatabaseTables))
+            .service(SubService::new("FHS Storage", RouterKey::DatabaseFhs))
+            .service(SubService::new("Health", RouterKey::DatabaseHealth)),
+    ];
 
     let service_card_views = services
         .into_iter()

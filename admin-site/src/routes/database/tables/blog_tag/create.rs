@@ -1,14 +1,11 @@
 use crate::ui::{
     back_button::BackButton,
-    primitive::{
-        button::Button,
-        form::{FormCheckbox, FormInput},
-    },
+    primitive::{button::Button, form::FormInput},
 };
 use leptos::prelude::*;
 
 #[component]
-pub fn CreateBlogPage() -> impl IntoView {
+pub fn CreateBlogTagPage() -> impl IntoView {
     view! {
         <div class="flex flex-col gap-4">
             <BackButton />
@@ -19,7 +16,7 @@ pub fn CreateBlogPage() -> impl IntoView {
 
 #[component]
 pub fn MetaForm() -> impl IntoView {
-    let action = ServerAction::<CreateBlog>::new();
+    let action = ServerAction::<CreateBlogTag>::new();
     // holds the latest *returned* value from the server
     let value = action.value();
     let error = move || {
@@ -37,9 +34,8 @@ pub fn MetaForm() -> impl IntoView {
 
             <ActionForm action>
                 <div class="flex flex-col gap-4 w-fit items-start">
-                    <FormInput label="Title" field="title" />
-                    <FormInput label="File name" field="file_name" />
-                    <FormCheckbox label="Publish" field="is_publish" />
+                    <FormInput label="Code" field="code" />
+                    <FormInput label="Label" field="label" />
 
                     <Button attr:r#type="submit">Create</Button>
                 </div>
@@ -49,24 +45,15 @@ pub fn MetaForm() -> impl IntoView {
 }
 
 #[server]
-async fn create_blog(
-    title: String,
-    file_name: String,
-    #[server(default)] is_publish: bool,
-) -> Result<(), ServerFnError> {
+async fn create_blog_tag(code: String, label: String) -> Result<(), ServerFnError> {
     use crate::state::ctx;
     use crate::utils::router::RouterKey;
-    use proto_types::blog::meta::BlogMetaShape;
-    use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    use proto_types::blog::tag::BlogTagShape;
+    use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
 
-    rpc.create(BlogMetaShape {
-        title,
-        file_name,
-        is_publish,
-    })
-    .await?;
+    rpc.create(BlogTagShape { code, label }).await?;
 
-    leptos_axum::redirect(RouterKey::DatabaseTablesBlog.as_ref());
+    leptos_axum::redirect(RouterKey::DatabaseTablesBlogTag.as_ref());
     Ok(())
 }

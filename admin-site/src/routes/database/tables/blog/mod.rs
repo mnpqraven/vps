@@ -9,6 +9,7 @@ use crate::ui::primitive::{
 };
 use crate::utils::pagination::PaginationButton;
 use crate::utils::pagination::{PaginationDirection, PaginationState, use_pagination};
+use crate::utils::router::RouterKey;
 use leptos::prelude::*;
 use leptos_router::components::A;
 use proto_types::{
@@ -51,7 +52,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
         <div class="flex flex-col gap-4 p-4">
             <div class="flex gap-4 items-center">
                 <BackButton />
-                <A href="/database/tables/blog/create">
+                <A href=RouterKey::DatabaseTablesBlogCreate.as_ref()>
                     <Button class="ml-auto">New</Button>
                 </A>
                 <Loading when=pending />

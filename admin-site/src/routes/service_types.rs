@@ -1,3 +1,5 @@
+use crate::utils::router::RouterKey;
+
 /// general service item (database, syncthing, etc...)
 pub struct ServiceItem {
     pub title: String,
@@ -32,10 +34,10 @@ pub struct SubService {
 }
 
 impl SubService {
-    pub fn new(title: &str, href: &str) -> Self {
+    pub fn new(title: &str, href: RouterKey) -> Self {
         Self {
             title: title.into(),
-            href: href.into(),
+            href: href.to_string(),
         }
     }
 }

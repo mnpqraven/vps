@@ -7,6 +7,7 @@ use crate::{
         back_button::BackButton,
         primitive::card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
     },
+    utils::router::RouterKey,
 };
 use leptos::prelude::*;
 use leptos_router::components::A;
@@ -17,22 +18,23 @@ pub fn DatabaseTablePage() -> impl IntoView {
         title: "Tables".into(),
         description: None,
         sub_services: vec![
-            SubService::new("Blog", "/database/tables/blog"),
-            SubService::new("Blog Tag", "/database/tables/blog_tag"),
+            SubService::new("Blog", RouterKey::DatabaseTablesBlog),
+            SubService::new("Blog Tag", RouterKey::DatabaseTablesBlogTag),
         ],
     }];
 
     let table_card_views = tables
         .into_iter()
-        .map(|card| {
-            view! {
-                <ServiceCard
-                    title=card.title
-                    description=card.description.unwrap_or_default()
-                    sub_services=card.sub_services
-                />
-            }
-        })
+        .map(
+            |ServiceItem {
+                 title,
+                 description,
+                 sub_services,
+             }| {
+                let description = description.unwrap_or_default();
+                view! { <ServiceCard title description sub_services /> }
+            },
+        )
         .collect_view();
 
     view! {
