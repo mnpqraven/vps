@@ -97,7 +97,7 @@ async fn delete_tag(id: String) -> Result<(), ServerFnError> {
 }
 
 #[server]
-async fn get_blog_tags(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
+pub async fn get_blog_tags(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
     use crate::state::ctx;
     use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
 

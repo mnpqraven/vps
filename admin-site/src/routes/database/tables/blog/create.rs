@@ -1,11 +1,15 @@
-use crate::ui::{
-    back_button::BackButton,
-    primitive::{
-        button::Button,
-        form::{FormCheckbox, FormInput},
+use crate::{
+    routes::database::tables::blog_tag::get_blog_tags,
+    ui::{
+        back_button::BackButton,
+        primitive::{
+            button::Button,
+            form::{FormCheckbox, FormInput, FormTextarea},
+        },
     },
 };
 use leptos::prelude::*;
+use proto_types::common::db::Pagination;
 
 #[component]
 pub fn CreateBlogPage() -> impl IntoView {
@@ -32,13 +36,15 @@ pub fn MetaForm() -> impl IntoView {
 
     view! {
         <ErrorBoundary fallback=move |error| { move || format!("{:?}", error.get()) }>
-            // TODO human-readable error return
+            // TODO: human-readable error return
             <pre>{error}</pre>
 
             <ActionForm action>
+                // TODO: tag selector
                 <div class="flex flex-col gap-4 w-fit items-start">
                     <FormInput label="Title" field="title" />
-                    <FormInput label="File name" field="file_name" />
+                    <MultiCheckbox />
+                    <FormTextarea label="Content" field="content" />
                     <FormCheckbox label="Publish" field="is_publish" />
 
                     <Button attr:r#type="submit">Create</Button>
@@ -51,22 +57,73 @@ pub fn MetaForm() -> impl IntoView {
 #[server]
 async fn create_blog(
     title: String,
-    file_name: String,
+    content: String,
+    tag_ids: Vec<String>,
     #[server(default)] is_publish: bool,
 ) -> Result<(), ServerFnError> {
     use crate::state::ctx;
     use crate::utils::router::RouterKey;
     use proto_types::blog::meta::BlogMetaShape;
-    use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    use proto_types::blog::root::{BlogShape, blog_service_client::BlogServiceClient};
 
-    rpc.create(BlogMetaShape {
-        title,
-        file_name,
-        is_publish,
-    })
-    .await?;
+    let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+
+    // TODO: get filename from title (hypenized)
+    let file_name = String::from("frontend_placeholder.md");
+
+    let payload: BlogShape = BlogShape {
+        meta_shape: Some(BlogMetaShape {
+            title,
+            file_name,
+            is_publish,
+        }),
+        tag_ids, // TODO:
+        file_content: content,
+    };
+
+    leptos::logging::log!("{payload:?}");
+    tracing::info!("{payload:?}");
+
+    // let _ = rpc.create(payload).await?;
 
     leptos_axum::redirect(RouterKey::DatabaseTablesBlog.as_ref());
     Ok(())
+}
+
+// TODO: serde error
+#[component]
+fn MultiCheckbox() -> impl IntoView {
+    let async_data = Resource::new(
+        move || (),
+        |_| {
+            get_blog_tags(Pagination {
+                page_index: 0,
+                page_size: 1000,
+                search: String::new(),
+            })
+        },
+    );
+
+    let suspend_views = move || {
+        async_data.get().map(|result| {
+            let tags = result.unwrap().data;
+            tags.into_iter()
+                .map(|tag| {
+                    view! {
+                        <div>
+                            <input type="checkbox" name="tag_ids" value=tag.id />
+                            <span>{tag.label}</span>
+                        </div>
+                    }
+                })
+                .collect_view()
+        })
+    };
+
+    view! {
+        <fieldset>
+            <legend>"Tags"</legend>
+            <Transition>{suspend_views}</Transition>
+        </fieldset>
+    }
 }

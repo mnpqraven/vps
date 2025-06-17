@@ -1,4 +1,4 @@
-use crate::ui::primitive::input::Input;
+use crate::ui::primitive::{input::Input, textarea::Textarea};
 use leptos::prelude::*;
 
 fn use_id(field: Signal<String>) -> Signal<String> {
@@ -15,6 +15,19 @@ pub fn FormInput(
     view! {
         <label for=id>{label}</label>
         <Input {..} id=id name=field type="text" autocomplete="off" />
+    }
+}
+
+#[component]
+pub fn FormTextarea(
+    #[prop(optional, into)] label: Signal<String>,
+    #[prop(into)] field: Signal<String>,
+) -> impl IntoView {
+    let id = use_id(field);
+
+    view! {
+        <label for=id>{label}</label>
+        <Textarea {..} id=id name=field type="text" autocomplete="off" />
     }
 }
 
