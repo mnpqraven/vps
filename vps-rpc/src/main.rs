@@ -2,12 +2,13 @@ use proto_types::{
     DESCRIPTOR_SET,
     blog::{
         meta::blog_meta_service_server::BlogMetaServiceServer,
+        root::blog_service_server::BlogServiceServer,
         tag::blog_tag_service_server::BlogTagServiceServer,
     },
     greeter_server::GreeterServer,
 };
 use services::{
-    database::blog::{meta::BlogMetaRpc, tag::BlogTagRpc},
+    database::blog::{BlogRpc, meta::BlogMetaRpc, tag::BlogTagRpc},
     greeter::GreeterRpc,
 };
 use tonic::transport::Server;
@@ -43,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(GreeterServer::new(GreeterRpc::default()))
         .add_service(BlogTagServiceServer::new(BlogTagRpc { conn: db.clone() }))
         .add_service(BlogMetaServiceServer::new(BlogMetaRpc { conn: db.clone() }))
+        .add_service(BlogServiceServer::new(BlogRpc { conn: db.clone() }))
         .serve(RPC_ADDR.parse()?)
         .await?;
 
