@@ -1,19 +1,19 @@
 use proto_types::{
+    DESCRIPTOR_SET,
     blog::{
         meta::blog_meta_service_server::BlogMetaServiceServer,
         tag::blog_tag_service_server::BlogTagServiceServer,
     },
     greeter_server::GreeterServer,
-    DESCRIPTOR_SET,
 };
 use services::{
-    database::{blog::meta::BlogMetaRpc, blog_tag::BlogTagRpc},
+    database::blog::{meta::BlogMetaRpc, tag::BlogTagRpc},
     greeter::GreeterRpc,
 };
 use tonic::transport::Server;
 use vps_rpc::{
-    layer::{cors, grpc_web},
     RPC_ADDR,
+    layer::{cors, grpc_web},
 };
 
 pub mod services;

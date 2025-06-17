@@ -21,6 +21,9 @@ pub mod blog {
     pub mod meta {
         tonic::include_proto!("blog.meta");
     }
+    pub mod root {
+        tonic::include_proto!("blog.root");
+    }
 }
 
 pub mod common {

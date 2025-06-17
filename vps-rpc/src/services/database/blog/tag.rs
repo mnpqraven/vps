@@ -1,13 +1,12 @@
+use crate::utils::{TonicResult, error::RpcError};
 use database::table::blog_tag::BlogTagDb;
 use proto_types::{
     blog::tag::{BlogTag, BlogTagList, BlogTagShape, blog_tag_service_server::BlogTagService},
     common::db::{Id, Pagination},
 };
 use sqlx::{Pool, Postgres};
-use tonic::{Request, Response, Status};
+use tonic::{Request, Response};
 use tracing::instrument;
-
-use crate::utils::error::RpcError;
 
 #[derive(Debug)]
 pub struct BlogTagRpc {
@@ -18,7 +17,7 @@ pub struct BlogTagRpc {
 #[tonic::async_trait]
 impl BlogTagService for BlogTagRpc {
     #[instrument(skip(self, request), level = "DEBUG", ret)]
-    async fn list(&self, request: Request<Pagination>) -> Result<Response<BlogTagList>, Status> {
+    async fn list(&self, request: Request<Pagination>) -> TonicResult<BlogTagList> {
         let pagination = request.into_inner();
         let data = BlogTagDb::list(&self.conn, &pagination)
             .await
@@ -32,7 +31,7 @@ impl BlogTagService for BlogTagRpc {
     }
 
     #[instrument(skip(self, request), level = "DEBUG", ret)]
-    async fn get_by_id(&self, request: Request<Id>) -> Result<Response<BlogTag>, Status> {
+    async fn get_by_id(&self, request: Request<Id>) -> TonicResult<BlogTag> {
         let id = &request.into_inner().id;
         let data = BlogTagDb::detail(&self.conn, id)
             .await
@@ -41,7 +40,7 @@ impl BlogTagService for BlogTagRpc {
     }
 
     #[instrument(skip(self, request), level = "DEBUG", ret)]
-    async fn create(&self, request: Request<BlogTagShape>) -> Result<Response<BlogTag>, Status> {
+    async fn create(&self, request: Request<BlogTagShape>) -> TonicResult<BlogTag> {
         let req = request.into_inner();
         let data = BlogTagDb::create(&self.conn, &req)
             .await
@@ -50,7 +49,7 @@ impl BlogTagService for BlogTagRpc {
     }
 
     #[instrument(skip(self, request), level = "DEBUG", ret)]
-    async fn update(&self, request: Request<BlogTag>) -> Result<Response<BlogTag>, Status> {
+    async fn update(&self, request: Request<BlogTag>) -> TonicResult<BlogTag> {
         let req = &request.into_inner();
         let data = BlogTagDb::update(&self.conn, req)
             .await
@@ -59,7 +58,7 @@ impl BlogTagService for BlogTagRpc {
     }
 
     #[instrument(skip(self, request), level = "DEBUG", ret)]
-    async fn delete(&self, request: Request<Id>) -> Result<Response<Id>, Status> {
+    async fn delete(&self, request: Request<Id>) -> TonicResult<Id> {
         let req = &request.into_inner();
         let data = BlogTagDb::delete(&self.conn, &req.id)
             .await

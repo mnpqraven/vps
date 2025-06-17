@@ -1,4 +1,4 @@
-use crate::utils::error::RpcError;
+use crate::utils::{TonicResult, error::RpcError};
 use database::table::blog_meta::BlogMetaDb;
 use proto_types::{
     blog::meta::{
@@ -7,7 +7,7 @@ use proto_types::{
     common::db::{Id, Pagination},
 };
 use sqlx::{Pool, Postgres};
-use tonic::{Request, Response, Status};
+use tonic::{Request, Response};
 
 #[derive(Debug)]
 pub struct BlogMetaRpc {
@@ -16,7 +16,7 @@ pub struct BlogMetaRpc {
 
 #[tonic::async_trait]
 impl BlogMetaService for BlogMetaRpc {
-    async fn list(&self, request: Request<Pagination>) -> Result<Response<BlogMetaList>, Status> {
+    async fn list(&self, request: Request<Pagination>) -> TonicResult<BlogMetaList> {
         let pagination = request.into_inner();
         let data = BlogMetaDb::list(&self.conn, &pagination)
             .await
@@ -28,14 +28,14 @@ impl BlogMetaService for BlogMetaRpc {
             data,
         }))
     }
-    async fn get_by_id(&self, request: Request<Id>) -> Result<Response<BlogMeta>, Status> {
+    async fn get_by_id(&self, request: Request<Id>) -> TonicResult<BlogMeta> {
         let id = &request.into_inner().id;
         let data = BlogMetaDb::detail(&self.conn, id)
             .await
             .map_err(RpcError::db_with_context(id))?;
         Ok(Response::new(data))
     }
-    async fn create(&self, request: Request<BlogMetaShape>) -> Result<Response<BlogMeta>, Status> {
+    async fn create(&self, request: Request<BlogMetaShape>) -> TonicResult<BlogMeta> {
         let req = request.into_inner();
         let data = BlogMetaDb::create(&self.conn, &req)
             .await
@@ -43,7 +43,7 @@ impl BlogMetaService for BlogMetaRpc {
 
         Ok(Response::new(data))
     }
-    async fn update(&self, request: Request<BlogMeta>) -> Result<Response<BlogMeta>, Status> {
+    async fn update(&self, request: Request<BlogMeta>) -> TonicResult<BlogMeta> {
         let req = &request.into_inner();
         let data = BlogMetaDb::update(&self.conn, &req.id, &req.clone().into_shape())
             .await
@@ -51,7 +51,7 @@ impl BlogMetaService for BlogMetaRpc {
 
         Ok(Response::new(data))
     }
-    async fn delete(&self, request: Request<Id>) -> Result<Response<Id>, Status> {
+    async fn delete(&self, request: Request<Id>) -> TonicResult<Id> {
         let req = &request.into_inner();
         let data = BlogMetaDb::delete(&self.conn, &req.id)
             .await

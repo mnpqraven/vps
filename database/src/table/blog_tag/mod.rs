@@ -11,7 +11,6 @@ use uuid::Uuid;
 
 pub struct BlogTagDb;
 
-// TODO: return type on all fns
 impl BlogTagDb {
     #[instrument(skip(conn), ret)]
     pub async fn list(conn: &Db, pg: &Pagination) -> Result<Vec<BlogTag>, DbError> {
