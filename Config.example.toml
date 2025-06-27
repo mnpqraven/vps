@@ -6,3 +6,8 @@ user = "postgres"
 password = "postgres"
 database_entrypoint = "mydatabase"
 blob_storage_path = "/home/othi/.vps/data"
+
+[cloudflare]
+record_id = ""
+zone_id = ""
+api_token = ""

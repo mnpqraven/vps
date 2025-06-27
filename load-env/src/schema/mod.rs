@@ -18,6 +18,7 @@ pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
 pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
     pub rpc: EnvSchemaRpc,
+    pub cloudflare: EnvCloudflare,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -31,6 +32,13 @@ pub struct EnvSchemaDatabase {
     password: String,
     database_entrypoint: String,
     blob_storage_path: String,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvCloudflare {
+    record_id: String,
+    zone_id: String,
+    api_token: String,
 }
 
 impl EnvSchemaDatabase {

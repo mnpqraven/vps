@@ -1,6 +1,6 @@
 use std::process::Command;
 
-pub fn ip_lookup() -> String {
+fn public_ip() -> String {
     // dig -6 TXT +short o-o.myaddr.l.google.com @ns1.google.com
     let cmd = Command::new("dig")
         .args([
@@ -19,13 +19,18 @@ pub fn ip_lookup() -> String {
     ip
 }
 
+pub async fn update_cf_conf() {
+    let ip = public_ip();
+    todo!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn same_with_curl() {
-        let left = ip_lookup();
+        let left = public_ip();
 
         // curl ifconfig.me
         let right_cmd = Command::new("curl")
