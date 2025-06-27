@@ -48,6 +48,8 @@
             tailwindcss_4
             rustup
             bacon
+            # cron-ddns dep
+            dig
             protobuf
             grpcui
             grpcurl

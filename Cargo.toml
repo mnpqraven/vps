@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "admin-site",
+  "admin-site", "cron-ddns",
   "database",
   "load-env",
   "proto-build-help",
