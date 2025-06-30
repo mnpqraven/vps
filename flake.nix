@@ -16,9 +16,7 @@
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = (import nixpkgs) {
-          inherit system;
-        };
+        pkgs = (import nixpkgs) { inherit system; };
         rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
           PORT=5005
           ${pkgs.grpcui}/bin/grpcui -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
@@ -26,13 +24,9 @@
         layout = pkgs.writeShellScriptBin "layout" ''
           ${pkgs.zellij}/bin/zellij -l .zellij/servers.kdl
         '';
-        # TODO: trunk cmd
-        # `trunk serve --open --port 5010`
       in
       {
-        packages = {
-          inherit rpcWeb layout;
-        };
+        packages = { inherit rpcWeb layout; };
 
         apps.rpcWeb = {
           type = "app";
@@ -51,9 +45,6 @@
             export RUSTFLAGS="--cfg erase_components"
           '';
           nativeBuildInputs = with pkgs; [
-            # TODO: fix autocomplete error
-            # rustc
-            # cargo
             tailwindcss_4
             rustup
             bacon
@@ -62,7 +53,6 @@
             grpcurl
             sqlx-cli
             cargo-generate
-            trunk
             cargo-leptos
             leptosfmt
           ];
