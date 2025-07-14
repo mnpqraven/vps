@@ -3,20 +3,63 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    naersk.url = "github:nix-community/naersk";
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs-mozilla = {
+      url = "github:mozilla/nixpkgs-mozilla";
+      flake = false;
+    };
   };
 
   outputs =
     {
       nixpkgs,
+      naersk,
       flake-utils,
       self,
+      nixpkgs-mozilla,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = (import nixpkgs) { inherit system; };
+        pkgs = (import nixpkgs) {
+          inherit system;
+          overlays = [
+            (import nixpkgs-mozilla)
+          ];
+        };
+        toolchain =
+          (pkgs.rustChannelOf {
+            rustToolchain = ./rust-toolchain.toml;
+            sha256 = "sha256-442fNe+JZCKeR146x4Nh0O00XeAfPWMalJDbV+vJQNg=";
+          }).rust;
+        naersk' = pkgs.callPackage naersk {
+          cargo = toolchain;
+          rustc = toolchain;
+        };
+
+        # BUG: all these packages are broken, need to solve proto dir env
+        vps-rpc = naersk'.buildPackage {
+          pname = "vps-rpc";
+          src = ./.;
+          gitSubmodules = true;
+          cargoBuildOptions = opts: opts ++ [ "--package vps-rpc" ];
+        };
+        cron-ddns = naersk'.buildPackage {
+          pname = "cron-ddns";
+          src = ./.;
+          gitSubmodules = true;
+          cargoBuildOptions = opts: opts ++ [ "--package cron-ddns" ];
+        };
+        # TODO: leptos build
+        admin-site = naersk'.buildPackage {
+          pname = "admin-site";
+          src = ./.;
+          gitSubmodules = true;
+          cargoBuild = ''cargo leptos build'';
+        };
+
         rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
           PORT=5005
           ${pkgs.grpcui}/bin/grpcui -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
@@ -26,7 +69,17 @@
         '';
       in
       {
-        packages = { inherit rpcWeb layout; };
+        packages = {
+          inherit
+            # dev binaries
+            rpcWeb
+            layout
+            # prod binaries
+            admin-site
+            vps-rpc
+            cron-ddns
+            ;
+        };
 
         apps.rpcWeb = {
           type = "app";
