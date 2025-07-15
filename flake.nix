@@ -2,6 +2,8 @@
   description = "VPS control tools";
 
   inputs = {
+    self.submodules = true;
+
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     naersk.url = "github:nix-community/naersk";
     flake-utils.url = "github:numtide/flake-utils";
@@ -38,26 +40,39 @@
           cargo = toolchain;
           rustc = toolchain;
         };
+        buildPackage =
+          pname:
+          naersk'.buildPackage {
+            inherit pname;
+            src = ./.;
+            gitSubmodules = true;
+            cargoBuildOptions =
+              opts:
+              opts
+              ++ [
+                "-p"
+                pname
+              ];
+            cargoTestOptions =
+              opts:
+              opts
+              ++ [
+                "-p"
+                pname
+              ];
+            PROTOC = with pkgs; lib.getExe protobuf;
+          };
 
-        # BUG: all these packages are broken, need to solve proto dir env
-        vps-rpc = naersk'.buildPackage {
-          pname = "vps-rpc";
-          src = ./.;
-          gitSubmodules = true;
-          cargoBuildOptions = opts: opts ++ [ "--package vps-rpc" ];
-        };
-        cron-ddns = naersk'.buildPackage {
-          pname = "cron-ddns";
-          src = ./.;
-          gitSubmodules = true;
-          cargoBuildOptions = opts: opts ++ [ "--package cron-ddns" ];
-        };
+        vps-rpc = buildPackage "vps-rpc";
+        cron-ddns = buildPackage "cron-ddns";
+
         # TODO: leptos build
         admin-site = naersk'.buildPackage {
           pname = "admin-site";
           src = ./.;
           gitSubmodules = true;
           cargoBuild = ''cargo leptos build'';
+          PROTOC = with pkgs; lib.getExe protobuf;
         };
 
         rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''

@@ -15,3 +15,4 @@ debug/
 # dev data folder
 .vps
 admin-site/tailwind.config.js
+result
