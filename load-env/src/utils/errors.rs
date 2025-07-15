@@ -12,6 +12,10 @@ pub enum EnvError {
     #[error("no suitable configuration env found, is this not running as an user ?")]
     NoSuitableConfigDir,
 
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
+    #[error("io error in {file_name:?}: {source}")]
+    Io {
+        file_name: Option<String>,
+        #[source]
+        source: std::io::Error,
+    },
 }

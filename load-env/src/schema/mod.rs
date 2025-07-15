@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::PathBuf;
+use tracing::info;
 use tracing::instrument;
 
 pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
@@ -59,7 +60,10 @@ impl EnvSchema {
     pub fn load() -> Result<Self, EnvError> {
         let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
         let first_legit_file = first_legit_file(crate_path, true)?;
-        let conf_str = read_to_string(first_legit_file)?;
+        let conf_str = read_to_string(first_legit_file.clone()).map_err(|source| EnvError::Io {
+            file_name: Some(first_legit_file),
+            source,
+        })?;
 
         let env = toml::from_str::<EnvSchema>(&conf_str)?;
 
