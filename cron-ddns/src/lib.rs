@@ -13,14 +13,14 @@ fn public_ip() -> String {
         .output();
     let result = cmd.expect("is dig installed ?").stdout;
     let ip = String::from_utf8(result)
-        .expect("conversion TODO:")
+        .expect("command output should product normal utf8 characters")
         .trim()
         .replace("\"", "");
     ip
 }
 
 pub async fn update_cf_conf() {
-    let ip = public_ip();
+    let _ip = public_ip();
     todo!()
 }
 

@@ -6,7 +6,6 @@ use serde::Serialize;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::PathBuf;
-use tracing::info;
 use tracing::instrument;
 
 pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
