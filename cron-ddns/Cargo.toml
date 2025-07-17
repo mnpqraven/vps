@@ -7,3 +7,11 @@ description.workspace = true
 documentation.workspace = true
 
 [dependencies]
+apalis = { version = "0.7.2", features = ["tracing"] }
+apalis-cron = "0.7.2"
+chrono = "0.4.41"
+serde.workspace = true
+tokio.workspace = true
+tower = { version = "0.5.2", features = ["load-shed"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -21,7 +21,7 @@ fn public_ip() -> String {
 
 pub async fn update_cf_conf() {
     let _ip = public_ip();
-    todo!()
+    todo!("CALLING CF UPDATE API");
 }
 
 #[cfg(test)]
