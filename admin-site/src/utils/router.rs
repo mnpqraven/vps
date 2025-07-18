@@ -24,6 +24,8 @@ pub enum RouterKey {
     DatabaseTablesBlogCreate,
     #[strum(to_string = "database/tables/blog_tag")]
     DatabaseTablesBlogTag,
+    #[strum(to_string = "database/tables/blog_tag/detail/{0}")]
+    DatabaseTablesBlogTagDetail(String),
     #[strum(to_string = "database/tables/blog_tag/create")]
     DatabaseTablesBlogTagCreate,
 }

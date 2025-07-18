@@ -30,7 +30,16 @@ pub fn DatabaseTableBlogTagPage() -> impl IntoView {
     );
 
     let column_defs = ColumnDefs::<BlogTag>::new()
-        .col("ID", |row| row.id.clone().into_any())
+        .col("ID", |row| {
+            let id = row.id.clone();
+            let href = RouterKey::DatabaseTablesBlogTagDetail(id.clone()).to_string();
+            view! {
+                <A href>
+                    <span class="underline hover:no-underline">{id}</span>
+                </A>
+            }
+            .into_any()
+        })
         .col("Code", |row| row.code.clone().into_any())
         .col("Label", |row| row.label.clone().into_any())
         .col("", |row| {
