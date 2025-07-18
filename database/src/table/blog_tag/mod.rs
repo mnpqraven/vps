@@ -181,7 +181,7 @@ mod tests {
         )
         .await?;
         assert_eq!(list.len(), 1);
-        let first_code = list.get(0).map(|e| e.code.clone());
+        let first_code = list.first().map(|e| e.code.clone());
         assert_eq!(first_code, Some("__cargo_test_hello_code".to_string()));
 
         Ok(())

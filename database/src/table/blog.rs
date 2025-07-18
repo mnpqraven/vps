@@ -126,15 +126,11 @@ impl BlogDb {
 
         let data = temp_flat
             .chunk_by(|a, b| a.meta_id == b.meta_id)
-            .into_iter()
             .map(|with_diffing_tags| {
                 let peek = with_diffing_tags.first();
                 let meta: Option<BlogMeta> = peek.cloned().map(Into::into);
-                let tags: Vec<BlogTag> = with_diffing_tags
-                    .into_iter()
-                    .cloned()
-                    .map(Into::into)
-                    .collect();
+                let tags: Vec<BlogTag> =
+                    with_diffing_tags.iter().cloned().map(Into::into).collect();
                 let content = read_markdown_file(
                     &meta
                         .as_ref()

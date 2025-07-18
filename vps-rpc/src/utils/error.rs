@@ -33,7 +33,7 @@ impl From<RpcError> for Status {
             }
             RpcError::DbError { context, source } => {
                 // FIXME: all error are 404 for now, need to split cases
-                let fmt = format!("{context}");
+                let fmt = context.to_string();
                 tracing::error!("{fmt}\n{}", source.to_string());
                 // TODO:
                 tonic::Status::unknown(fmt)

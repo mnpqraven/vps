@@ -187,7 +187,7 @@ mod tests {
 
     #[tokio::test]
     async fn blog_meta_1_blanket_create_md_file() -> Result<(), DbError> {
-        create_markdown_file("__cargo_test_filename.md", "abitrary string content".into()).await?;
+        create_markdown_file("__cargo_test_filename.md", "abitrary string content").await?;
         Ok(())
     }
 
@@ -234,7 +234,7 @@ mod tests {
         )
         .await?;
         assert_eq!(list.len(), 1);
-        let first_filename = list.get(0).map(|e| e.file_name.as_str());
+        let first_filename = list.first().map(|e| e.file_name.as_str());
         assert_eq!(first_filename, Some("__cargo_test_filename.md"));
 
         Ok(())
