@@ -12,8 +12,15 @@ pub fn is_legit_filename(filename: &str) -> bool {
 ///
 /// * `fullpath` - wheter the return the fullpath or just the file name
 #[instrument(ret, skip(path), level = "debug")]
-pub fn first_legit_file<P: AsRef<Path>>(path: P, fullpath: bool) -> Result<String, EnvError> {
-    let filename_or_path = read_dir(path)?
+pub fn first_legit_file<P: AsRef<Path> + Clone>(
+    path: P,
+    fullpath: bool,
+) -> Result<String, EnvError> {
+    let filename_or_path = read_dir(path.clone())
+        .map_err(|source| EnvError::Io {
+            file_name: Some(path.as_ref().to_string_lossy().to_string()),
+            source,
+        })?
         .flatten()
         .filter(|dir| is_legit_filename(&dir.file_name().to_string_lossy()))
         .map(|dir| match fullpath {

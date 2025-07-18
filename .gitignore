@@ -12,3 +12,7 @@ debug/
 **/*.rs.bk
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+# dev data folder
+.vps
+admin-site/tailwind.config.js
+result

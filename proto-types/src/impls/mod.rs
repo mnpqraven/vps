@@ -9,6 +9,7 @@ impl DefaultState for Pagination {
         Self {
             page_index: 0,
             page_size: 10,
+            search: String::new(),
         }
     }
 }

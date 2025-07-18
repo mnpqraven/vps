@@ -3,7 +3,9 @@ use crate::utils::filename_resolve::first_legit_file;
 use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
 use serde::Serialize;
+use std::fs;
 use std::fs::read_to_string;
+use std::path::PathBuf;
 use tracing::instrument;
 
 pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
@@ -16,6 +18,7 @@ pub const NAME_REGEX: &str = r"\.?[cC]onfig\.?(dev|production)?\.toml";
 pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
     pub rpc: EnvSchemaRpc,
+    pub cloudflare: EnvCloudflare,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -28,6 +31,27 @@ pub struct EnvSchemaDatabase {
     user: String,
     password: String,
     database_entrypoint: String,
+    blob_storage_path: String,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvCloudflare {
+    record_id: String,
+    zone_id: String,
+    api_token: String,
+}
+
+impl EnvSchemaDatabase {
+    pub fn blob_storage(&self) -> Result<PathBuf, EnvError> {
+        let maybe_path = self.blob_storage_path.clone();
+
+        match fs::create_dir_all(&maybe_path).is_err() {
+            true => Err(EnvError::FileNotFound(format!(
+                "blob storage folder: {maybe_path}"
+            ))),
+            false => Ok(maybe_path.into()),
+        }
+    }
 }
 
 impl EnvSchema {
@@ -35,7 +59,10 @@ impl EnvSchema {
     pub fn load() -> Result<Self, EnvError> {
         let crate_path = get_first_valid_dir().ok_or(EnvError::NoSuitableConfigDir)?;
         let first_legit_file = first_legit_file(crate_path, true)?;
-        let conf_str = read_to_string(first_legit_file)?;
+        let conf_str = read_to_string(first_legit_file.clone()).map_err(|source| EnvError::Io {
+            file_name: Some(first_legit_file),
+            source,
+        })?;
 
         let env = toml::from_str::<EnvSchema>(&conf_str)?;
 
@@ -47,6 +74,7 @@ impl EnvSchema {
             user,
             password,
             database_entrypoint,
+            ..
         } = &self.database;
         format!("postgres://{user}:{password}@localhost/{database_entrypoint}")
     }
@@ -64,6 +92,7 @@ impl Default for EnvSchemaDatabase {
             user: "postgres".into(),
             password: "postgres".into(),
             database_entrypoint: "mydatabase".into(),
+            blob_storage_path: "/home/othi/.vps/data".into(),
         }
     }
 }

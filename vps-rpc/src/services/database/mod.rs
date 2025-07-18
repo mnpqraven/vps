@@ -1,1 +1,1 @@
-pub mod blog_tag;
+pub mod blog;

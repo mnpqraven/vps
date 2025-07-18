@@ -1,6 +1,9 @@
 // @see https://github.com/hyperium/tonic/issues/1643
 
+pub mod derived;
 pub mod impls;
+
+pub use tonic::Status;
 
 pub const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
 
@@ -14,6 +17,12 @@ pub mod service {
 pub mod blog {
     pub mod tag {
         tonic::include_proto!("blog.tag");
+    }
+    pub mod meta {
+        tonic::include_proto!("blog.meta");
+    }
+    pub mod root {
+        tonic::include_proto!("blog.root");
     }
 }
 

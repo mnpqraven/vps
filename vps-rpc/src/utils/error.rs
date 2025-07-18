@@ -32,9 +32,11 @@ impl From<RpcError> for Status {
                 tonic::Status::resource_exhausted("bad database connection".to_string())
             }
             RpcError::DbError { context, source } => {
-                let fmt = format!("Resource not found: {context}");
+                // FIXME: all error are 404 for now, need to split cases
+                let fmt = context.to_string();
                 tracing::error!("{fmt}\n{}", source.to_string());
-                tonic::Status::not_found(fmt)
+                // TODO:
+                tonic::Status::unknown(fmt)
             }
             _ => {
                 tracing::error!("{val:?}");

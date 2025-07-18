@@ -10,6 +10,9 @@ pub enum DbError {
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
 
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+
     /// bad env configuration that makes database unavailable
     #[error("bad env configuration {0}")]
     BadEnv(#[from] load_env::EnvError),

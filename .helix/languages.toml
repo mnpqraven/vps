@@ -11,9 +11,10 @@ args = ["--stdio"]
 [language-server.tailwindcss.config]
 tailwindCSS = { includeLanguages = { rust = "html", "*.rs" = "html" } }
 
-# [language-server.rust-analyzer.config]
-# procMacro = { ignored = { leptos_macro = ["server"] } }
-# cargo = { allFeatures = true }
+[language-server.rust-analyzer.config]
+rustfmt = { overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"] }
+cargo = { allFeatures = true }
+check.command = "clippy"
 
 [language-server.emmet-lsp.config]
 emmet = { includeLanguages = { rust = "html", "*.rs" = "html" } }
