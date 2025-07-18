@@ -7,22 +7,47 @@ use crate::{
             form::{FormCheckbox, FormInput, FormTextarea},
         },
     },
+    utils::FormMode,
 };
 use leptos::prelude::*;
-use proto_types::common::db::Pagination;
+use leptos_router::hooks::use_params_map;
+use proto_types::{blog::root::Blog, common::db::Pagination};
 
 #[component]
-pub fn CreateBlogPage() -> impl IntoView {
+pub fn BlogFormPage() -> impl IntoView {
+    let params = use_params_map();
+    let default_value = Resource::new(
+        move || params.read().get("id"),
+        |id| async move { get_blog(id).await.ok().flatten() },
+    );
+    let mode = Signal::derive(move || match params.read().get("id") {
+        Some(_id) => FormMode::Update,
+        None => FormMode::Create,
+    });
+    let extra_skip = Signal::derive(move || params.read().get("id").map(|_| 1_usize));
+    let (_pending, set_pending) = signal(false);
+
     view! {
         <div class="flex flex-col gap-4">
-            <BackButton />
-            <MetaForm />
+            <BackButton extra_skip />
+            <Transition set_pending>
+                {move || {
+                    default_value
+                        .get()
+                        .map(|default_value| {
+                            view! { <MetaForm default_value mode /> }
+                        })
+                }}
+            </Transition>
         </div>
     }
 }
 
 #[component]
-pub fn MetaForm() -> impl IntoView {
+pub fn MetaForm(
+    #[prop(into)] mode: Signal<FormMode>,
+    default_value: Option<Blog>,
+) -> impl IntoView {
     let action = ServerAction::<CreateBlog>::new();
     // holds the latest *returned* value from the server
     let value = action.value();
@@ -33,6 +58,7 @@ pub fn MetaForm() -> impl IntoView {
             _ => String::new(),
         }
     };
+    let mode_str = Signal::derive(move || mode.get().to_string());
 
     view! {
         <ErrorBoundary fallback=move |error| { move || format!("{:?}", error.get()) }>
@@ -40,14 +66,36 @@ pub fn MetaForm() -> impl IntoView {
             <pre>{error}</pre>
 
             <ActionForm action>
-                // TODO: tag selector
                 <div class="flex flex-col gap-4 w-fit items-start">
-                    <FormInput label="Title" field="title" />
+                    <FormInput
+                        label="Title"
+                        field="title"
+                        {..}
+                        value=default_value.as_ref().map(|e| e.meta.clone().map(|f| f.title))
+                    />
                     <MultiCheckbox />
-                    <FormTextarea label="Content" field="content" />
-                    <FormCheckbox label="Publish" field="is_publish" />
+                    <FormTextarea
+                        label="Content"
+                        field="content"
+                        {..}
+                        value=default_value.as_ref().map(|e| e.content.clone())
+                    />
+                    <FormCheckbox
+                        label="Publish"
+                        field="is_publish"
+                        {..}
+                        value=default_value.as_ref().map(|e| e.meta.clone().map(|f| f.is_publish))
+                    />
 
-                    <Button attr:r#type="submit">Create</Button>
+                    // phantom
+                    <input class="hidden" name="mode" value=mode_str />
+                    <input
+                        class="hidden"
+                        name="id"
+                        value=default_value.and_then(|e| e.meta.map(|f| f.id))
+                    />
+
+                    <Button attr:r#type="submit">{mode_str}</Button>
                 </div>
             </ActionForm>
         </ErrorBoundary>
@@ -90,7 +138,20 @@ async fn create_blog(
     Ok(())
 }
 
-// TODO: serde error
+#[server]
+async fn get_blog(id: Option<String>) -> Result<Option<Blog>, ServerFnError> {
+    use crate::state::ctx;
+    use proto_types::blog::root::blog_service_client::BlogServiceClient;
+    use proto_types::common::db::Id;
+
+    if let Some(id) = id {
+        let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+        let res = rpc.detail(Id { id }).await?.into_inner();
+        return Ok(Some(res));
+    }
+    Ok(None)
+}
+
 #[component]
 fn MultiCheckbox() -> impl IntoView {
     let async_data = Resource::new(

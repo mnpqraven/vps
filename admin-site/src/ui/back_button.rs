@@ -8,8 +8,8 @@ pub fn BackButton(
     /// e.g a skip_level = 1 would take you from
     /// `/foo/bar/baz/quz` to
     /// `/foo/bar`
-    #[prop(optional)]
-    extra_skip: Option<usize>,
+    #[prop(optional, into)]
+    extra_skip: Signal<Option<usize>>,
     /// optional override to a specific path
     #[prop(optional)]
     to: Option<String>,
@@ -25,8 +25,8 @@ pub fn BackButton(
         let pathname = location.pathname.get();
         let mut chunks: Vec<&str> = pathname.split("/").collect();
         chunks.pop();
-        if let Some(skip_level) = extra_skip {
-            for _i in 0..skip_level {
+        if let Some(extra_skip) = extra_skip.get() {
+            for _i in 0..extra_skip {
                 chunks.pop();
             }
         }

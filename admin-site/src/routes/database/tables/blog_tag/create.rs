@@ -22,11 +22,12 @@ pub fn BlogTagFormPage() -> impl IntoView {
         Some(_id) => FormMode::Update,
         None => FormMode::Create,
     });
+    let extra_skip = Signal::derive(move || params.read().get("id").map(|_| 1_usize));
     let (_pending, set_pending) = signal(false);
 
     view! {
         <div class="flex flex-col gap-4">
-            <BackButton extra_skip=1 />
+            <BackButton extra_skip />
             <Transition set_pending>
                 {move || {
                     default_value
@@ -74,7 +75,7 @@ pub fn MetaForm(
                         value=default_value.as_ref().map(|e| e.label.clone())
                     />
 
-                    // phantom divs
+                    // phantom
                     <input class="hidden" name="mode" value=mode_str />
                     <input class="hidden" name="id" value=default_value.map(|e| e.id) />
 

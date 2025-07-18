@@ -1,5 +1,5 @@
 use crate::routes::database::tables::blog::DatabaseTableBlogPage;
-use crate::routes::database::tables::blog::create::CreateBlogPage;
+use crate::routes::database::tables::blog::create::BlogFormPage;
 use crate::routes::database::tables::blog_tag::create::BlogTagFormPage;
 use crate::routes::database::tables::{DatabaseTablePage, blog_tag::DatabaseTableBlogTagPage};
 use crate::routes::not_found::NotFound;
@@ -58,7 +58,8 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/database") view=DatabasePage />
                     <Route path=path!("/database/tables") view=DatabaseTablePage />
                     <Route path=path!("/database/tables/blog") view=DatabaseTableBlogPage />
-                    <Route path=path!("/database/tables/blog/create") view=CreateBlogPage />
+                    <Route path=path!("/database/tables/blog/detail/:id") view=BlogFormPage />
+                    <Route path=path!("/database/tables/blog/create") view=BlogFormPage />
                     <Route path=path!("/database/tables/blog_tag") view=DatabaseTableBlogTagPage />
                     <Route
                         path=path!("/database/tables/blog_tag/detail/:id")
