@@ -22,12 +22,14 @@ pub fn FormInput(
 pub fn FormTextarea(
     #[prop(optional, into)] label: Signal<String>,
     #[prop(into)] field: Signal<String>,
+    /// a children is passed if
+    #[prop(optional)]
+    default_value: Option<impl IntoView>,
 ) -> impl IntoView {
     let id = use_id(field);
-
     view! {
         <label for=id>{label}</label>
-        <Textarea {..} id=id name=field type="text" autocomplete="off" />
+        <Textarea default_value {..} id=id name=field type="text" autocomplete="off" />
     }
 }
 

@@ -46,7 +46,7 @@ pub fn BlogFormPage() -> impl IntoView {
 #[component]
 pub fn MetaForm(
     #[prop(into)] mode: Signal<FormMode>,
-    default_value: Option<Blog>,
+    #[prop(into)] default_value: Signal<Option<Blog>>,
 ) -> impl IntoView {
     let action = ServerAction::<CreateBlog>::new();
     // holds the latest *returned* value from the server
@@ -63,6 +63,7 @@ pub fn MetaForm(
     view! {
         <ErrorBoundary fallback=move |error| { move || format!("{:?}", error.get()) }>
             // TODO: human-readable error return
+            // hide if there's no error
             <pre>{error}</pre>
 
             <ActionForm action>
@@ -71,20 +72,19 @@ pub fn MetaForm(
                         label="Title"
                         field="title"
                         {..}
-                        value=default_value.as_ref().map(|e| e.meta.clone().map(|f| f.title))
+                        value=default_value.get().map(|e| e.meta.clone().map(|f| f.title))
                     />
-                    <TagsSelector />
+                    <TagsSelector default_value />
                     <FormTextarea
                         label="Content"
                         field="content"
-                        {..}
-                        value=default_value.as_ref().map(|e| e.content.clone())
+                        default_value=default_value.get().map(|e| e.content.clone())
                     />
                     <FormCheckbox
                         label="Publish"
                         field="is_publish"
                         {..}
-                        value=default_value.as_ref().map(|e| e.meta.clone().map(|f| f.is_publish))
+                        checked=default_value.get().map(|e| e.meta.clone().map(|f| f.is_publish))
                     />
 
                     // phantom
@@ -92,7 +92,7 @@ pub fn MetaForm(
                     <input
                         class="hidden"
                         name="id"
-                        value=default_value.and_then(|e| e.meta.map(|f| f.id))
+                        value=default_value.get().and_then(|e| e.meta.map(|f| f.id))
                     />
 
                     <Button attr:r#type="submit">{mode_str}</Button>
@@ -143,13 +143,14 @@ async fn get_blog(id: Option<String>) -> Result<Option<Blog>, ServerFnError> {
     if let Some(id) = id {
         let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
         let res = rpc.detail(Id { id }).await?.into_inner();
+        leptos::logging::log!("{res:?}");
         return Ok(Some(res));
     }
     Ok(None)
 }
 
 #[component]
-fn TagsSelector() -> impl IntoView {
+fn TagsSelector(#[prop(into)] default_value: Signal<Option<Blog>>) -> impl IntoView {
     let async_data = Resource::new(
         move || (),
         |_| {
@@ -171,7 +172,23 @@ fn TagsSelector() -> impl IntoView {
                     let name = format!("tag_ids[{i}]");
                     view! {
                         <div>
-                            <input type="checkbox" name=name value=tag.id />
+                            <input
+                                type="checkbox"
+                                name=name
+                                value=tag.id.clone()
+                                // TODO: optimization
+                                // probably can optimize this by omitting the clone somewhere up the tree
+                                checked=move || {
+                                    let ids: Vec<String> = default_value
+                                        .get()
+                                        .map(|e| e.tags)
+                                        .unwrap_or_default()
+                                        .iter()
+                                        .map(|f| f.id.clone())
+                                        .collect();
+                                    ids.contains(&tag.id)
+                                }
+                            />
                             <span>{tag.label}</span>
                         </div>
                     }
