@@ -23,6 +23,7 @@ fn public_ip() -> String {
 
 pub async fn update_cf_conf() -> Result<(), CronDdnsError> {
     let _ip = public_ip();
+    // call api
     Ok(())
 }
 
