@@ -1,0 +1,83 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    SELECT \n                        blog_meta_tag_map.blog_meta_id AS meta_id,\n                        blog_meta_tag_map.blog_tag_id AS tag_id,\n                        blog_tag.label AS tag_label,\n                        blog_tag.code AS tag_code,\n                        blog_tag.created_at AS tag_created_at,\n                        blog_tag.updated_at AS tag_updated_at,\n                        blog_meta.title AS meta_title,\n                        blog_meta.file_name AS meta_file_name,\n                        blog_meta.is_publish AS meta_is_publish,\n                        blog_meta.created_at AS meta_created_at,\n                        blog_meta.updated_at AS meta_updated_at\n                    FROM blog_meta_tag_map\n                    INNER JOIN blog_tag ON\n                    \tblog_tag.id = blog_meta_tag_map.blog_tag_id\n                    INNER JOIN blog_meta ON\n                    \tblog_meta.id = blog_meta_tag_map.blog_meta_id\n                \tORDER BY meta_id, tag_id\n                    LIMIT $1 OFFSET $2\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "meta_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "tag_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "tag_label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "tag_code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "tag_created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "tag_updated_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "meta_title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "meta_file_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "meta_is_publish",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 9,
+        "name": "meta_created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "meta_updated_at",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "24c2e1e4852acc41f4c4b538ff29606a8bccecd90a7ccd17428507781d2dcca3"
+}
