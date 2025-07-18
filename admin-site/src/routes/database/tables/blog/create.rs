@@ -66,7 +66,7 @@ async fn create_blog(
     use proto_types::blog::meta::BlogMetaShape;
     use proto_types::blog::root::{BlogShape, blog_service_client::BlogServiceClient};
 
-    let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+    let _rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
 
     // TODO: get filename from title (hypenized)
     let file_name = String::from("frontend_placeholder.md");

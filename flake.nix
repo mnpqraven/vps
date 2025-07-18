@@ -18,7 +18,6 @@
       nixpkgs,
       naersk,
       flake-utils,
-      self,
       nixpkgs-mozilla,
       ...
     }:
@@ -41,25 +40,22 @@
           rustc = toolchain;
         };
         buildPackage =
+          let
+            packageOpt =
+              pname: opts:
+              opts
+              ++ [
+                "-p"
+                pname
+              ];
+          in
           pname:
           naersk'.buildPackage {
             inherit pname;
             src = ./.;
             gitSubmodules = true;
-            cargoBuildOptions =
-              opts:
-              opts
-              ++ [
-                "-p"
-                pname
-              ];
-            cargoTestOptions =
-              opts:
-              opts
-              ++ [
-                "-p"
-                pname
-              ];
+            cargoBuildOptions = packageOpt pname;
+            cargoTestOptions = packageOpt pname;
             PROTOC = with pkgs; lib.getExe protobuf;
           };
 
@@ -77,10 +73,10 @@
 
         rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
           PORT=5005
-          ${pkgs.grpcui}/bin/grpcui -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
+          ${pkgs.lib.getExe pkgs.grpcui} -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
         '';
         layout = pkgs.writeShellScriptBin "layout" ''
-          ${pkgs.zellij}/bin/zellij -l .zellij/servers.kdl
+          ${pkgs.lib.getExe pkgs.zellij} -l .zellij/servers.kdl
         '';
       in
       {
@@ -98,11 +94,11 @@
 
         apps.rpcWeb = {
           type = "app";
-          program = "${self.packages.${system}.rpcWeb}/bin/rpcWeb";
+          program = with pkgs; lib.getExe rpcWeb;
         };
         apps.layout = {
           type = "app";
-          program = "${self.packages.${system}.layout}/bin/layout";
+          program = with pkgs; lib.getExe layout;
         };
 
         # nix develop
@@ -113,15 +109,20 @@
             export RUSTFLAGS="--cfg erase_components"
           '';
           nativeBuildInputs = with pkgs; [
-            tailwindcss_4
-            rustup
+            # dev dps
             bacon
-            # cron-ddns dep
-            dig
-            protobuf
             grpcui
             grpcurl
             sqlx-cli
+
+            tailwindcss_4
+            rustup
+            # cron-ddns dep
+            dig
+            protobuf
+
+            # for wasm-opt building on release
+            binaryen
             cargo-generate
             cargo-leptos
             leptosfmt
