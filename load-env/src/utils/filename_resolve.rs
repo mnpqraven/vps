@@ -4,7 +4,7 @@ use std::{fs::read_dir, path::Path};
 use tracing::instrument;
 
 pub fn is_legit_filename(filename: &str) -> bool {
-    let name_regex = Regex::new(NAME_REGEX).unwrap();
+    let name_regex = Regex::new(NAME_REGEX).expect("failed to create regex builder");
     name_regex.is_match(filename)
 }
 

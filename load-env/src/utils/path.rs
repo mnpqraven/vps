@@ -16,7 +16,7 @@ pub fn get_first_valid_dir() -> Option<PathBuf> {
 /// ./vps
 #[instrument(ret, level = "debug")]
 pub fn cargo_dir() -> Option<PathBuf> {
-    if let Ok(cargo_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+    if let Some(cargo_dir) = option_env!("CARGO_MANIFEST_DIR") {
         let crate_path = PathBuf::from(cargo_dir);
         crate_path.parent().map(|e| e.to_path_buf())
     } else {
@@ -27,7 +27,7 @@ pub fn cargo_dir() -> Option<PathBuf> {
 /// /home/<username>/.config/vps/config.toml
 #[instrument(ret, level = "debug")]
 pub fn user_config_dir() -> Option<PathBuf> {
-    if let Ok(username) = std::env::var("USER") {
+    if let Some(username) = option_env!("USER") {
         let path = PathBuf::from(format!("/home/{username}/.config/vps"));
         return Some(path);
     }

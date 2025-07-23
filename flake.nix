@@ -115,6 +115,10 @@
             grpcurl
             sqlx-cli
 
+            # ssl for auth
+            openssl
+            pkg-config
+
             tailwindcss_4
             rustup
             # cron-ddns dep

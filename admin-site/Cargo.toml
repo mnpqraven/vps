@@ -25,6 +25,8 @@ leptos-use = "0.16.0-beta2"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror.workspace = true
 anyhow.workspace = true
+reqwest.workspace = true
+oauth2 = "5.0.0"
 
 [features]
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook", "dep:wasm-bindgen"]

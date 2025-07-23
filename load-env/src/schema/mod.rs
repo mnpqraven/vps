@@ -3,6 +3,7 @@ use crate::utils::filename_resolve::first_legit_file;
 use crate::utils::path::get_first_valid_dir;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs;
 use std::fs::read_to_string;
 use std::path::PathBuf;
@@ -19,6 +20,7 @@ pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
     pub rpc: EnvSchemaRpc,
     pub cloudflare: EnvCloudflare,
+    pub frontend: HashMap<String, EnvFrontend>,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -39,6 +41,13 @@ pub struct EnvCloudflare {
     record_id: String,
     zone_id: String,
     api_token: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvFrontend {
+    pub client_id: String,
+    pub client_secret: String,
+    pub callback_url: String,
 }
 
 impl EnvSchemaDatabase {
