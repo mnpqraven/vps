@@ -1,4 +1,4 @@
-use crate::routes::auth::ui::LoginPage;
+use crate::routes::auth::ui::{AuthCallbackPage, LoginPage};
 use crate::routes::database::tables::blog::DatabaseTableBlogPage;
 use crate::routes::database::tables::blog::create::BlogFormPage;
 use crate::routes::database::tables::blog_tag::create::BlogTagFormPage;
@@ -56,7 +56,8 @@ pub fn App() -> impl IntoView {
             <main class="container mx-auto pt-6">
                 <Routes fallback=NotFound>
                     <Route path=path!("/") view=HomePage />
-                    <Route path=path!("/login") view=LoginPage />
+                    <Route path=path!("/auth/login") view=LoginPage />
+                    <Route path=path!("/auth/callback") view=AuthCallbackPage />
                     <Route path=path!("/database") view=DatabasePage />
                     <Route path=path!("/database/tables") view=DatabaseTablePage />
                     <Route path=path!("/database/tables/blog") view=DatabaseTableBlogPage />

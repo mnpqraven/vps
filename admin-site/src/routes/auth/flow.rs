@@ -1,13 +1,46 @@
+use leptos::prelude::ServerFnError;
+use leptos::server;
+use oauth2::basic::{BasicClient, BasicErrorResponseType, BasicTokenType};
+use oauth2::*;
+use tracing::info;
+
 #[cfg(feature = "ssr")]
-pub(super) async fn dev() -> Result<(), Box<dyn std::error::Error>> {
+pub(super) fn http_client_for_token() -> reqwest::Client {
+    reqwest::ClientBuilder::new()
+        // Following redirects opens the client up to SSRF vulnerabilities.
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Client should build")
+}
+
+#[cfg(feature = "ssr")]
+pub(super) async fn oauth_url() -> Result<String, Box<dyn std::error::Error>> {
+    let client = github_client()?;
+
+    let (auth_url, _csrf_token) = client
+        .authorize_url(CsrfToken::new_random)
+        .add_scope(Scope::new("read".to_string()))
+        .url();
+
+    Ok(auth_url.to_string())
+}
+
+type GithubClientType = Client<
+    StandardErrorResponse<BasicErrorResponseType>,
+    StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+    StandardTokenIntrospectionResponse<EmptyExtraTokenFields, BasicTokenType>,
+    StandardRevocableToken,
+    StandardErrorResponse<RevocationErrorResponseType>,
+    EndpointSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointSet,
+>;
+
+#[cfg(feature = "ssr")]
+pub fn github_client() -> Result<GithubClientType, Box<dyn std::error::Error>> {
     use load_env::schema::EnvFrontend;
-    use oauth2::basic::BasicClient;
-    use oauth2::reqwest;
-    use oauth2::{
-        AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge,
-        RedirectUrl, Scope, TokenResponse, TokenUrl,
-    };
-    use tracing::info;
 
     let dot = load_env::EnvSchema::load();
     if dot.is_err() {
@@ -33,50 +66,34 @@ pub(super) async fn dev() -> Result<(), Box<dyn std::error::Error>> {
             "https://github.com/login/oauth/authorize".to_string(),
         )?)
         .set_token_uri(TokenUrl::new(
-            "https://github.com/login/oauth/token".to_string(),
+            "https://github.com/login/oauth/access_token".to_string(),
         )?)
         // Set the URL the user will be redirected to after the authorization process.
         .set_redirect_uri(RedirectUrl::new(callback_url.to_string())?);
+    Ok(client)
+}
 
-    // Generate a PKCE challenge.
-    let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+#[server]
+pub(super) async fn exchange_code_for_token(
+    code: Option<String>,
+) -> Result<Option<AccessToken>, ServerFnError> {
+    use super::flow::github_client;
+    use oauth2::AuthorizationCode;
 
-    // Generate the full authorization URL.
-    let (auth_url, csrf_token) = client
-        .authorize_url(CsrfToken::new_random)
-        // Set the desired scopes.
-        .add_scope(Scope::new("read".to_string()))
-        .add_scope(Scope::new("write".to_string()))
-        // Set the PKCE code challenge.
-        .set_pkce_challenge(pkce_challenge)
-        .url();
+    if let Some(code) = code {
+        // Once the user has been redirected to the redirect URL, you'll have access to the
+        // authorization code. For security reasons, your code should verify that the `state`
+        // parameter returned by the server matches `csrf_token`.
 
-    // This is the URL you should redirect the user to, in order to trigger the authorization
-    // process.
-    println!("Browse to: {}", auth_url);
+        // Now you can trade it for an access token.
+        let token_result = github_client()
+            .unwrap()
+            .exchange_code(AuthorizationCode::new(code))
+            .request_async(&http_client_for_token())
+            .await?;
+        let access_token = token_result.access_token();
+        return Ok(Some(access_token.clone()));
+    }
 
-    // Once the user has been redirected to the redirect URL, you'll have access to the
-    // authorization code. For security reasons, your code should verify that the `state`
-    // parameter returned by the server matches `csrf_token`.
-
-    let http_client = reqwest::ClientBuilder::new()
-        // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Client should build");
-
-    // Now you can trade it for an access token.
-    let token_result = client
-        .exchange_code(AuthorizationCode::new(
-            "some authorization code".to_string(),
-        ))
-        // Set the PKCE code verifier.
-        .set_pkce_verifier(pkce_verifier)
-        .request_async(&http_client)
-        .await?;
-
-    // Unwrapping token_result will either produce a Token or a RequestTokenError.
-    info!("{token_result:?}");
-
-    Ok(())
+    Ok(None)
 }
