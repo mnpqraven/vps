@@ -1,8 +1,6 @@
-use leptos::prelude::ServerFnError;
-use leptos::server;
-use oauth2::basic::{BasicClient, BasicErrorResponseType, BasicTokenType};
+use leptos::prelude::*;
+use oauth2::basic::{BasicErrorResponseType, BasicTokenType};
 use oauth2::*;
-use tracing::info;
 
 #[cfg(feature = "ssr")]
 pub(super) fn http_client_for_token() -> reqwest::Client {
@@ -14,7 +12,7 @@ pub(super) fn http_client_for_token() -> reqwest::Client {
 }
 
 #[cfg(feature = "ssr")]
-pub(super) async fn oauth_url() -> Result<String, Box<dyn std::error::Error>> {
+pub(super) async fn oauth_url() -> Result<String, ServerFnError> {
     let client = github_client()?;
 
     let (auth_url, _csrf_token) = client
@@ -25,6 +23,7 @@ pub(super) async fn oauth_url() -> Result<String, Box<dyn std::error::Error>> {
     Ok(auth_url.to_string())
 }
 
+#[cfg(feature = "ssr")]
 type GithubClientType = Client<
     StandardErrorResponse<BasicErrorResponseType>,
     StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
@@ -39,17 +38,14 @@ type GithubClientType = Client<
 >;
 
 #[cfg(feature = "ssr")]
-pub fn github_client() -> Result<GithubClientType, Box<dyn std::error::Error>> {
+pub fn github_client() -> Result<GithubClientType, ServerFnError> {
     use load_env::schema::EnvFrontend;
+    use oauth2::basic::BasicClient;
 
-    let dot = load_env::EnvSchema::load();
-    if dot.is_err() {
-        panic!("bad env");
-    }
-    let dot = dot.unwrap();
+    let dot = load_env::EnvSchema::load()?;
     let dot = dot.frontend.get("admin-site");
     if dot.is_none() {
-        panic!("bad env");
+        return Err(ServerFnError::ServerError("env is none".into()));
     }
     let dot = dot.unwrap();
     let EnvFrontend {
@@ -73,7 +69,7 @@ pub fn github_client() -> Result<GithubClientType, Box<dyn std::error::Error>> {
     Ok(client)
 }
 
-#[server]
+#[cfg(feature = "ssr")]
 pub(super) async fn exchange_code_for_token(
     code: Option<String>,
 ) -> Result<Option<AccessToken>, ServerFnError> {
@@ -86,8 +82,7 @@ pub(super) async fn exchange_code_for_token(
         // parameter returned by the server matches `csrf_token`.
 
         // Now you can trade it for an access token.
-        let token_result = github_client()
-            .unwrap()
+        let token_result = github_client()?
             .exchange_code(AuthorizationCode::new(code))
             .request_async(&http_client_for_token())
             .await?;

@@ -1,4 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum FrontendError {}
+pub enum FrontendError {
+    #[error("Unknown Error: {0}")]
+    Unknown(String),
+}
