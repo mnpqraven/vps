@@ -36,9 +36,10 @@ pub struct EnvSchemaDatabase {
 
 #[derive(Default, Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct EnvCloudflare {
-    record_id: String,
-    zone_id: String,
-    api_token: String,
+    pub record_id: String,
+    pub zone_id: String,
+    pub api_token: String,
+    pub email: String,
 }
 
 impl EnvSchemaDatabase {
