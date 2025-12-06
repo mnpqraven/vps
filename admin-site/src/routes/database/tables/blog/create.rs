@@ -7,22 +7,47 @@ use crate::{
             form::{FormCheckbox, FormInput, FormTextarea},
         },
     },
+    utils::FormMode,
 };
 use leptos::prelude::*;
-use proto_types::common::db::Pagination;
+use leptos_router::hooks::use_params_map;
+use proto_types::{blog::root::Blog, common::db::Pagination};
 
 #[component]
-pub fn CreateBlogPage() -> impl IntoView {
+pub fn BlogFormPage() -> impl IntoView {
+    let params = use_params_map();
+    let default_value = Resource::new(
+        move || params.read().get("id"),
+        |id| async move { get_blog(id).await.ok().flatten() },
+    );
+    let mode = Signal::derive(move || match params.read().get("id") {
+        Some(_id) => FormMode::Update,
+        None => FormMode::Create,
+    });
+    let extra_skip = Signal::derive(move || params.read().get("id").map(|_| 1_usize));
+    let (_pending, set_pending) = signal(false);
+
     view! {
         <div class="flex flex-col gap-4">
-            <BackButton />
-            <MetaForm />
+            <BackButton extra_skip />
+            <Transition set_pending>
+                {move || {
+                    default_value
+                        .get()
+                        .map(|default_value| {
+                            view! { <MetaForm default_value mode /> }
+                        })
+                }}
+            </Transition>
         </div>
     }
 }
 
 #[component]
-pub fn MetaForm() -> impl IntoView {
+pub fn MetaForm(
+    #[prop(into)] mode: Signal<FormMode>,
+    #[prop(into)] default_value: Signal<Option<Blog>>,
+) -> impl IntoView {
     let action = ServerAction::<CreateBlog>::new();
     // holds the latest *returned* value from the server
     let value = action.value();
@@ -33,21 +58,44 @@ pub fn MetaForm() -> impl IntoView {
             _ => String::new(),
         }
     };
+    let mode_str = Signal::derive(move || mode.get().to_string());
 
     view! {
         <ErrorBoundary fallback=move |error| { move || format!("{:?}", error.get()) }>
             // TODO: human-readable error return
+            // hide if there's no error
             <pre>{error}</pre>
 
             <ActionForm action>
-                // TODO: tag selector
                 <div class="flex flex-col gap-4 w-fit items-start">
-                    <FormInput label="Title" field="title" />
-                    <MultiCheckbox />
-                    <FormTextarea label="Content" field="content" />
-                    <FormCheckbox label="Publish" field="is_publish" />
+                    <FormInput
+                        label="Title"
+                        field="title"
+                        {..}
+                        value=default_value.get().map(|e| e.meta.clone().map(|f| f.title))
+                    />
+                    <TagsSelector default_value />
+                    <FormTextarea
+                        label="Content"
+                        field="content"
+                        default_value=default_value.get().map(|e| e.content.clone())
+                    />
+                    <FormCheckbox
+                        label="Publish"
+                        field="is_publish"
+                        {..}
+                        checked=default_value.get().map(|e| e.meta.clone().map(|f| f.is_publish))
+                    />
 
-                    <Button attr:r#type="submit">Create</Button>
+                    // phantom
+                    <input class="hidden" name="mode" value=mode_str />
+                    <input
+                        class="hidden"
+                        name="id"
+                        value=default_value.get().and_then(|e| e.meta.map(|f| f.id))
+                    />
+
+                    <Button attr:r#type="submit">{mode_str}</Button>
                 </div>
             </ActionForm>
         </ErrorBoundary>
@@ -58,7 +106,7 @@ pub fn MetaForm() -> impl IntoView {
 async fn create_blog(
     title: String,
     content: String,
-    tag_ids: Vec<String>,
+    #[server(default)] tag_ids: Vec<String>,
     #[server(default)] is_publish: bool,
 ) -> Result<(), ServerFnError> {
     use crate::state::ctx;
@@ -66,33 +114,43 @@ async fn create_blog(
     use proto_types::blog::meta::BlogMetaShape;
     use proto_types::blog::root::{BlogShape, blog_service_client::BlogServiceClient};
 
-    let _rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
 
-    // TODO: get filename from title (hypenized)
-    let file_name = String::from("frontend_placeholder.md");
-
-    let payload: BlogShape = BlogShape {
+    let payload = BlogShape {
         meta_shape: Some(BlogMetaShape {
-            title,
-            file_name,
+            title: title.clone(),
+            file_name: hyphen_filename(&title),
             is_publish,
         }),
         tag_ids, // TODO:
         file_content: content,
     };
 
-    leptos::logging::log!("{payload:?}");
-    tracing::info!("{payload:?}");
-
-    // let _ = rpc.create(payload).await?;
+    rpc.create(payload).await?;
+    // TODO: media upload here
 
     leptos_axum::redirect(RouterKey::DatabaseTablesBlog.as_ref());
+
     Ok(())
 }
 
-// TODO: serde error
+#[server]
+async fn get_blog(id: Option<String>) -> Result<Option<Blog>, ServerFnError> {
+    use crate::state::ctx;
+    use proto_types::blog::root::blog_service_client::BlogServiceClient;
+    use proto_types::common::db::Id;
+
+    if let Some(id) = id {
+        let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+        let res = rpc.detail(Id { id }).await?.into_inner();
+        leptos::logging::log!("{res:?}");
+        return Ok(Some(res));
+    }
+    Ok(None)
+}
+
 #[component]
-fn MultiCheckbox() -> impl IntoView {
+fn TagsSelector(#[prop(into)] default_value: Signal<Option<Blog>>) -> impl IntoView {
     let async_data = Resource::new(
         move || (),
         |_| {
@@ -104,14 +162,33 @@ fn MultiCheckbox() -> impl IntoView {
         },
     );
 
-    let suspend_views = move || {
+    let tag_checkbox_views = move || {
         async_data.get().map(|result| {
+            // TODO: unwrap
             let tags = result.unwrap().data;
             tags.into_iter()
-                .map(|tag| {
+                .enumerate()
+                .map(|(i, tag)| {
+                    let name = format!("tag_ids[{i}]");
                     view! {
                         <div>
-                            <input type="checkbox" name="tag_ids" value=tag.id />
+                            <input
+                                type="checkbox"
+                                name=name
+                                value=tag.id.clone()
+                                // TODO: optimization
+                                // probably can optimize this by omitting the clone somewhere up the tree
+                                checked=move || {
+                                    let ids: Vec<String> = default_value
+                                        .get()
+                                        .map(|e| e.tags)
+                                        .unwrap_or_default()
+                                        .iter()
+                                        .map(|f| f.id.clone())
+                                        .collect();
+                                    ids.contains(&tag.id)
+                                }
+                            />
                             <span>{tag.label}</span>
                         </div>
                     }
@@ -123,7 +200,18 @@ fn MultiCheckbox() -> impl IntoView {
     view! {
         <fieldset>
             <legend>"Tags"</legend>
-            <Transition>{suspend_views}</Transition>
+            <Transition>{tag_checkbox_views}</Transition>
         </fieldset>
     }
+}
+
+fn hyphen_filename(filename: &str) -> String {
+    use std::time::SystemTime;
+
+    let now = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let slug = filename.to_lowercase().replace(" ", "-");
+    format!("{now}_{slug}.md")
 }

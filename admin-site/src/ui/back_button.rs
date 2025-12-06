@@ -3,14 +3,33 @@ use leptos::prelude::*;
 use leptos_router::hooks::{use_location, use_navigate};
 
 #[component]
-pub fn BackButton() -> impl IntoView {
+pub fn BackButton(
+    /// if we need to go back by more than 1 level in a row
+    /// e.g a skip_level = 1 would take you from
+    /// `/foo/bar/baz/quz` to
+    /// `/foo/bar`
+    #[prop(optional, into)]
+    extra_skip: Signal<Option<usize>>,
+    /// optional override to a specific path
+    #[prop(optional)]
+    to: Option<String>,
+) -> impl IntoView {
     let location = use_location();
     let navigate = use_navigate();
     let on_back = move |_e| {
+        if let Some(to) = &to {
+            navigate(to, Default::default());
+            return;
+        }
+
         let pathname = location.pathname.get();
         let mut chunks: Vec<&str> = pathname.split("/").collect();
-        // see if we need conditional guard
         chunks.pop();
+        if let Some(extra_skip) = extra_skip.get() {
+            for _i in 0..extra_skip {
+                chunks.pop();
+            }
+        }
 
         let mut next = chunks.join("/");
         if next.is_empty() {

@@ -18,12 +18,14 @@ pub enum RouterKey {
     DatabaseTables,
     #[strum(to_string = "database/tables/blog")]
     DatabaseTablesBlog,
-    #[strum(to_string = "database/tables/blog/{0}")]
+    #[strum(to_string = "database/tables/blog/detail/{0}")]
     DatabaseTablesBlogDetail(String),
     #[strum(to_string = "database/tables/blog/create")]
     DatabaseTablesBlogCreate,
     #[strum(to_string = "database/tables/blog_tag")]
     DatabaseTablesBlogTag,
+    #[strum(to_string = "database/tables/blog_tag/detail/{0}")]
+    DatabaseTablesBlogTagDetail(String),
     #[strum(to_string = "database/tables/blog_tag/create")]
     DatabaseTablesBlogTagCreate,
 }

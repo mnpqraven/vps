@@ -33,7 +33,7 @@
         toolchain =
           (pkgs.rustChannelOf {
             rustToolchain = ./rust-toolchain.toml;
-            sha256 = "sha256-6k1KpO4EeeJE65qomJvmJHcwfcK9LlUUaGeQlhA1zbk=";
+            sha256 = "sha256-442fNe+JZCKeR146x4Nh0O00XeAfPWMalJDbV+vJQNg=";
           }).rust;
         naersk' = pkgs.callPackage naersk {
           cargo = toolchain;
@@ -70,21 +70,10 @@
           cargoBuild = ''cargo leptos build'';
           PROTOC = with pkgs; lib.getExe protobuf;
         };
-
-        rpcWeb = pkgs.writeShellScriptBin "rpcWeb" ''
-          PORT=5005
-          ${pkgs.lib.getExe pkgs.grpcui} -port 5006 -plaintext localhost:$PORT || echo "is the gRPC server running on port $PORT ?"
-        '';
-        layout = pkgs.writeShellScriptBin "layout" ''
-          ${pkgs.lib.getExe pkgs.zellij} -l .zellij/servers.kdl
-        '';
       in
       {
         packages = {
           inherit
-            # dev binaries
-            rpcWeb
-            layout
             # prod binaries
             admin-site
             vps-rpc
@@ -109,7 +98,12 @@
             export RUSTFLAGS="--cfg erase_components"
           '';
           nativeBuildInputs = with pkgs; [
-            # dev dps
+            just
+            # TODO: fix autocomplete error
+            # rustc
+            # cargo
+            tailwindcss_4
+            rustup
             bacon
             grpcui
             grpcurl
@@ -120,6 +114,9 @@
             # cron-ddns dep
             dig
             protobuf
+            # TLS
+            pkg-config
+            openssl
 
             # for wasm-opt building on release
             binaryen
