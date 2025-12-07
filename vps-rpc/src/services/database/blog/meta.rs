@@ -1,10 +1,11 @@
 use crate::utils::{TonicResult, error::RpcError};
 use database::table::blog_meta::BlogMetaDb;
+use proto_types::common::db::ProtoPagination;
 use proto_types::{
     blog::meta::{
         BlogMeta, BlogMetaList, BlogMetaShape, blog_meta_service_server::BlogMetaService,
     },
-    common::db::{Id, Pagination},
+    common::db::Id,
 };
 use sqlx::{Pool, Postgres};
 use tonic::{Request, Response};
@@ -16,14 +17,15 @@ pub struct BlogMetaRpc {
 
 #[tonic::async_trait]
 impl BlogMetaService for BlogMetaRpc {
-    async fn list(&self, request: Request<Pagination>) -> TonicResult<BlogMetaList> {
+    async fn list(&self, request: Request<ProtoPagination>) -> TonicResult<BlogMetaList> {
         let pagination = request.into_inner();
-        let data = BlogMetaDb::list(&self.conn, &pagination)
+        let data = BlogMetaDb::list(&self.conn, &pagination.into())
             .await
             .map_err(RpcError::db_with_context("uhh idk ???"))?;
 
         Ok(Response::new(BlogMetaList {
-            pagination: Some(pagination),
+            // TODO: correct this
+            pagination: None,
             total: data.len() as i32,
             data,
         }))

@@ -2,32 +2,30 @@ use crate::{
     DbError,
     utils::{common_structs::Db, time::now},
 };
+use proto_types::impls::Pagination;
 use proto_types::{
     blog::meta::{BlogMeta, BlogMetaShape},
-    common::db::{Id, Pagination},
+    common::db::Id,
 };
 use std::fs;
 use tracing::instrument;
 use uuid::Uuid;
 
-pub struct BlogMetaDb {}
+pub struct BlogMetaDb;
 
 // TODO: return type on all fns
 impl BlogMetaDb {
     #[instrument(skip(conn), ret)]
+    // TODO: meta(pg, count etc.) response instead of plain vec
     pub async fn list(conn: &Db, pg: &Pagination) -> Result<Vec<BlogMeta>, DbError> {
-        let offset = pg.page_index * pg.page_size;
-        // TODO: not very friendly on reusability
-        let data = if pg.search.is_empty() {
+        // empty string check
+        let data = if pg.search.is_none() {
             sqlx::query_as!(
                 BlogMeta,
                 "
                     SELECT *
                     FROM blog_meta
-                    LIMIT $1 OFFSET $2
                 ",
-                pg.page_size as i64,
-                offset as i64
             )
             .fetch_all(conn)
             .await?
@@ -35,14 +33,11 @@ impl BlogMetaDb {
             sqlx::query_as!(
                 BlogMeta,
                 "
-                    SELECT * 
+                    SELECT *
                     FROM blog_meta
-                    WHERE similarity(title, $3) >= 0.4
-                    ORDER BY similarity(title, $3) DESC
-                    LIMIT $1 OFFSET $2
+                    WHERE similarity(title, $1) >= 0.4
+                    ORDER BY similarity(title, $1) DESC
                 ",
-                pg.page_size as i64,
-                offset as i64,
                 pg.search
             )
             .fetch_all(conn)
@@ -178,12 +173,11 @@ async fn delete_markdown_file(filename: &str) -> Result<(), DbError> {
 #[cfg(test)]
 #[serial_test::serial]
 mod tests {
-    use proto_types::{blog::meta::BlogMetaShape, common::db::Pagination};
-
     use crate::{
         DbError, get_db,
         table::{blog::create_markdown_file, blog_meta::BlogMetaDb},
     };
+    use proto_types::{blog::meta::BlogMetaShape, impls::Pagination};
 
     #[tokio::test]
     async fn blog_meta_1_blanket_create_md_file() -> Result<(), DbError> {
@@ -199,7 +193,8 @@ mod tests {
             &Pagination {
                 page_index: 0,
                 page_size: 100,
-                search: "__cargo_test".into(),
+                search: Some("__cargo_test".into()),
+                all: false,
             },
         )
         .await?;
@@ -229,7 +224,8 @@ mod tests {
             &Pagination {
                 page_index: 0,
                 page_size: 100,
-                search: "__cargo_test".into(),
+                search: Some("__cargo_test".into()),
+                all: false,
             },
         )
         .await?;
@@ -247,7 +243,8 @@ mod tests {
         let pg = Pagination {
             page_index: 0,
             page_size: 100,
-            search: "__cargo_test".into(),
+            search: Some("__cargo_test".into()),
+            all: false,
         };
         let update_filename_str = "__cargo_test_filename_update.md";
 
@@ -284,7 +281,8 @@ mod tests {
         let pg = Pagination {
             page_index: 0,
             page_size: 100,
-            search: "__cargo_test".into(),
+            search: Some("__cargo_test".into()),
+            all: false,
         };
         let list = BlogMetaDb::list(&db, &pg).await?;
         let try_find = list.first();
@@ -307,7 +305,8 @@ mod tests {
             &Pagination {
                 page_index: 0,
                 page_size: 100,
-                search: "__cargo_test".into(),
+                search: Some("__cargo_test".into()),
+                all: false,
             },
         )
         .await?;

@@ -4,7 +4,8 @@ use crate::{
 };
 use proto_types::{
     blog::tag::{BlogTag, BlogTagShape},
-    common::db::{Id, Pagination},
+    common::db::Id,
+    impls::{Paged, Pagination},
 };
 use tracing::instrument;
 use uuid::Uuid;
@@ -13,19 +14,15 @@ pub struct BlogTagDb;
 
 impl BlogTagDb {
     #[instrument(skip(conn), ret)]
+    // TODO: proper response with meta
     pub async fn list(conn: &Db, pg: &Pagination) -> Result<Vec<BlogTag>, DbError> {
-        let offset = pg.page_index * pg.page_size;
-        // TODO: not very friendly on reusability
-        let data = if pg.search.is_empty() {
+        let data = if pg.search.is_none() {
             sqlx::query_as!(
                 BlogTag,
                 "
                     SELECT *
                     FROM blog_tag
-                    LIMIT $1 OFFSET $2
                 ",
-                pg.page_size as i64,
-                offset as i64
             )
             .fetch_all(conn)
             .await?
@@ -35,18 +32,17 @@ impl BlogTagDb {
                 "
                     SELECT *
                     FROM blog_tag
-                    WHERE similarity(label, $3) >= 0.4
-                        OR similarity(code, $3) >= 0.4
-                    ORDER BY similarity(label, $3) + similarity(code, $3) DESC
-                    LIMIT $1 OFFSET $2
+                    WHERE similarity(label, $1) >= 0.4
+                        OR similarity(code, $1) >= 0.4
+                    ORDER BY similarity(label, $1) + similarity(code, $1) DESC
                 ",
-                pg.page_size as i64,
-                offset as i64,
                 pg.search
             )
             .fetch_all(conn)
             .await?
         };
+
+        let (data, _meta) = data.paginate_by(pg.clone());
 
         tracing::info!("{data:?}");
 
@@ -136,7 +132,7 @@ impl BlogTagDb {
 #[cfg(test)]
 #[serial_test::serial]
 mod tests {
-    use proto_types::{blog::tag::BlogTagShape, common::db::Pagination};
+    use proto_types::{blog::tag::BlogTagShape, common::db::ProtoPagination};
 
     use crate::{DbError, get_db, table::blog_tag::BlogTagDb};
 
@@ -145,10 +141,10 @@ mod tests {
         let db = get_db().await?;
         let list = BlogTagDb::list(
             &db,
-            &Pagination {
-                page_index: 0,
-                page_size: 100,
-                search: "__cargo_test".into(),
+            &ProtoPagination {
+                page_index: Some(0),
+                page_size: Some(100),
+                search: Some("__cargo_test".into()),
             },
         )
         .await?;
@@ -173,10 +169,10 @@ mod tests {
         // populated in list
         let list = BlogTagDb::list(
             &db,
-            &Pagination {
-                page_index: 0,
-                page_size: 100,
-                search: "__cargo_test".into(),
+            &ProtoPagination {
+                page_index: Some(0),
+                page_size: Some(100),
+                search: Some("__cargo_test".into()),
             },
         )
         .await?;
@@ -190,10 +186,10 @@ mod tests {
     #[tokio::test]
     async fn blog_tag_3_update() -> Result<(), DbError> {
         let db = get_db().await?;
-        let pg = Pagination {
-            page_index: 0,
-            page_size: 100,
-            search: "__cargo_test".into(),
+        let pg = ProtoPagination {
+            page_index: Some(0),
+            page_size: Some(100),
+            search: Some("__cargo_test".into()),
         };
         let update_str = "__cargo_test_hello_title_updated";
 
@@ -219,10 +215,10 @@ mod tests {
     #[tokio::test]
     async fn blog_tag_4_delete() -> Result<(), DbError> {
         let db = get_db().await?;
-        let pg = Pagination {
-            page_index: 0,
-            page_size: 100,
-            search: "__cargo_test".into(),
+        let pg = ProtoPagination {
+            page_index: Some(0),
+            page_size: Some(100),
+            search: Some("__cargo_test".into()),
         };
         let list = BlogTagDb::list(&db, &pg).await?;
         let try_find = list.first();
@@ -240,10 +236,10 @@ mod tests {
         let db = get_db().await?;
         let list = BlogTagDb::list(
             &db,
-            &Pagination {
-                page_index: 0,
-                page_size: 100,
-                search: "__cargo_test".into(),
+            &ProtoPagination {
+                page_index: Some(0),
+                page_size: Some(100),
+                search: Some("__cargo_test".into()),
             },
         )
         .await?;

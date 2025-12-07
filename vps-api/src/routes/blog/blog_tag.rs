@@ -1,30 +1,31 @@
 use crate::utils::error::ApiError;
-use axum::{extract::Path, Json};
+use axum::{
+    Json,
+    extract::{Path, Query},
+};
 use proto_types::{
     blog::tag::{
-        blog_tag_service_client::BlogTagServiceClient, BlogTag, BlogTagList, BlogTagShape,
+        BlogTag, BlogTagList, BlogTagShape, blog_tag_service_client::BlogTagServiceClient,
     },
-    common::db::{Id, Pagination},
-    impls::DefaultState,
+    common::db::{Id, ProtoPagination},
+    impls::Pagination,
 };
 use utoipa_axum::{router::OpenApiRouter, routes};
 use vps_rpc::RPC_URL;
 
-/// List
+/// Blog tags
 #[utoipa::path(
-    post,
+    get,
     path = "",
-    request_body(
-        content = Pagination,
-        example = json!(Pagination::default_state())
-    ),
+    params(Pagination),
     responses(
         (status = OK, description = "Success", body = BlogTagList)
     )
 )]
-async fn list(Json(pagination): Json<Pagination>) -> Result<Json<BlogTagList>, ApiError> {
+async fn list(Query(pagination): Query<Pagination>) -> Result<Json<BlogTagList>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
-    let res = client.list(pagination).await?;
+    let pg: ProtoPagination = pagination.into();
+    let res = client.list(pg).await?;
     Ok(Json(res.into_inner()))
 }
 

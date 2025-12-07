@@ -20,8 +20,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .type_attribute(
             ".",
-            "#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)] #[serde(rename_all = \"snake_case\")]",
+            "#[derive(serde::Serialize, serde::Deserialize, utoipa::ToSchema)] #[serde(rename_all = \"camelCase\")]",
         )
+        .type_attribute("common.db.ProtoPagination", "#[derive(utoipa::IntoParams)]")
         .build_client(transport)
         .build_server(transport)
         .build_transport(transport)

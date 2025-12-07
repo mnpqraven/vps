@@ -13,19 +13,18 @@ struct PaginationQuery {
     search: Option<String>,
 }
 
-impl From<&PaginationQuery> for Pagination {
+impl From<PaginationQuery> for Pagination {
     fn from(
         PaginationQuery {
             index,
             size,
             search,
-        }: &PaginationQuery,
+        }: PaginationQuery,
     ) -> Self {
-        let default = Pagination::default_state();
         Self {
-            page_index: index.unwrap_or(default.page_index),
-            page_size: size.unwrap_or(default.page_size),
-            search: search.clone().unwrap_or_default(),
+            page_index: index,
+            page_size: size,
+            search,
         }
     }
 }
@@ -44,19 +43,19 @@ pub fn use_pagination() -> PaginationState {
             .read()
             .as_ref()
             .ok()
-            .map(Into::into)
+            .map(|e| Into::into(e.clone()))
             .unwrap_or(default.clone())
     });
 
     let prev_params = Signal::derive(move || {
-        let i = pagination.get().page_index - 1;
+        let i = pagination.get().page_index.unwrap_or_default() - 1;
         match i > 0 {
             true => format!("index={i}"),
             false => String::new(),
         }
     });
     let next_params = Signal::derive(move || {
-        let i = pagination.get().page_index + 1;
+        let i = pagination.get().page_index.unwrap_or_default() + 1;
         format!("index={i}")
     });
 
@@ -80,7 +79,7 @@ pub fn PaginationButton(
     #[prop(optional)] attr: Vec<AnyAttribute>,
 ) -> impl IntoView {
     let params = Signal::derive(move || {
-        let i = pagination.get().page_index;
+        let i = pagination.get().page_index.unwrap_or_default();
         match direction.get() {
             PaginationDirection::Prev => match i > 0 {
                 true => format!("index={}", i - 1),

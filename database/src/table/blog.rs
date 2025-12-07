@@ -6,7 +6,7 @@ use proto_types::{
         root::Blog,
         tag::BlogTag,
     },
-    common::db::Pagination,
+    impls::Pagination,
 };
 use std::fs;
 use tracing::instrument;
@@ -60,9 +60,9 @@ impl From<FlatBlogQuery> for BlogTag {
 }
 
 impl BlogDb {
+    // TODO: pagination logic
     pub async fn list(conn: &Db, pg: &Pagination) -> Result<Vec<Blog>, DbError> {
-        let offset = pg.page_index * pg.page_size;
-        let temp_flat = if pg.search.is_empty() {
+        let temp_flat = if pg.search.is_none() {
             sqlx::query_as!(
                 FlatBlogQuery,
                 "
@@ -84,10 +84,7 @@ impl BlogDb {
                     INNER JOIN blog_meta ON
                     	blog_meta.id = blog_meta_tag_map.blog_meta_id
                 	ORDER BY meta_id, tag_id
-                    LIMIT $1 OFFSET $2
                 ",
-                pg.page_size as i64,
-                offset as i64
             )
             .fetch_all(conn)
             .await?
@@ -112,12 +109,9 @@ impl BlogDb {
                     	blog_tag.id = blog_meta_tag_map.blog_tag_id
                     INNER JOIN blog_meta ON
                     	blog_meta.id = blog_meta_tag_map.blog_meta_id
-                    WHERE similarity(blog_meta.title, $3) >= 0.4
-                	ORDER BY similarity(blog_meta.title, $3) DESC, meta_id, tag_id
-                    LIMIT $1 OFFSET $2
+                    WHERE similarity(blog_meta.title, $1) >= 0.4
+                	ORDER BY similarity(blog_meta.title, $1) DESC, meta_id, tag_id
                 ",
-                pg.page_size as i64,
-                offset as i64,
                 pg.search
             )
             .fetch_all(conn)
