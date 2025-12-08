@@ -15,12 +15,14 @@ use vps_rpc::RPC_URL;
         (status = OK, description = "Success", body = BlogMetaList)
     )
 )]
-async fn meta_list(Query(params): Query<ProtoPagination>) -> Result<Json<BlogMetaList>, ApiError> {
+async fn list_blog_meta(
+    Query(params): Query<ProtoPagination>,
+) -> Result<Json<BlogMetaList>, ApiError> {
     let mut client = BlogMetaServiceClient::connect(RPC_URL).await?;
     let res = client.list(params).await?;
     Ok(Json(res.into_inner()))
 }
 
 pub fn router() -> OpenApiRouter {
-    OpenApiRouter::new().routes(routes!(meta_list))
+    OpenApiRouter::new().routes(routes!(list_blog_meta))
 }

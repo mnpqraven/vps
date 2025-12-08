@@ -8,7 +8,6 @@ use proto_types::{
         BlogTag, BlogTagList, BlogTagShape, blog_tag_service_client::BlogTagServiceClient,
     },
     common::db::{Id, ProtoPagination},
-    impls::Pagination,
 };
 use utoipa_axum::{router::OpenApiRouter, routes};
 use vps_rpc::RPC_URL;
@@ -22,7 +21,7 @@ use vps_rpc::RPC_URL;
         (status = OK, description = "Success", body = BlogTagList)
     )
 )]
-async fn tag_list(Query(pg): Query<ProtoPagination>) -> Result<Json<BlogTagList>, ApiError> {
+async fn list_tag(Query(pg): Query<ProtoPagination>) -> Result<Json<BlogTagList>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
     let res = client.list(pg).await?;
     Ok(Json(res.into_inner()))
@@ -36,7 +35,7 @@ async fn tag_list(Query(pg): Query<ProtoPagination>) -> Result<Json<BlogTagList>
         (status = OK, description = "Success", body = BlogTag)
     )
 )]
-async fn create(Json(payload): Json<BlogTagShape>) -> Result<Json<BlogTag>, ApiError> {
+async fn create_tag(Json(payload): Json<BlogTagShape>) -> Result<Json<BlogTag>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
     let res = client.create(payload).await?;
     Ok(Json(res.into_inner()))
@@ -52,7 +51,7 @@ async fn create(Json(payload): Json<BlogTagShape>) -> Result<Json<BlogTag>, ApiE
         (status = OK, description = "Success", body = BlogTag)
     )
 )]
-async fn get_by_id(Path(id): Path<Id>) -> Result<Json<BlogTag>, ApiError> {
+async fn get_tag(Path(id): Path<Id>) -> Result<Json<BlogTag>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
     let res = client.get_by_id(id).await?;
     Ok(Json(res.into_inner()))
@@ -66,7 +65,7 @@ async fn get_by_id(Path(id): Path<Id>) -> Result<Json<BlogTag>, ApiError> {
         (status = OK, description = "Success", body = BlogTag)
     )
 )]
-async fn update(
+async fn update_tag(
     Path(Id { id }): Path<Id>,
     Json(payload): Json<BlogTag>,
 ) -> Result<Json<BlogTag>, ApiError> {
@@ -88,7 +87,7 @@ async fn update(
         (status = OK, description = "Success", body = Id)
     )
 )]
-async fn delete(Path(id): Path<Id>) -> Result<Json<Id>, ApiError> {
+async fn delete_tag(Path(id): Path<Id>) -> Result<Json<Id>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
     let res = client.delete(id).await?;
     Ok(Json(res.into_inner()))
@@ -96,7 +95,7 @@ async fn delete(Path(id): Path<Id>) -> Result<Json<Id>, ApiError> {
 
 pub fn router() -> OpenApiRouter {
     OpenApiRouter::new()
-        .routes(routes!(tag_list)) // /
-        .routes(routes!(create)) // /create
-        .routes(routes!(get_by_id, update, delete)) // /{id}
+        .routes(routes!(list_tag)) // /
+        .routes(routes!(create_tag)) // /create
+        .routes(routes!(get_tag, update_tag, delete_tag)) // /{id}
 }
