@@ -12,10 +12,8 @@ use crate::utils::pagination::{PaginationDirection, PaginationState, use_paginat
 use crate::utils::router::RouterKey;
 use leptos::prelude::*;
 use leptos_router::components::A;
-use proto_types::{
-    blog::meta::{BlogMeta, BlogMetaList},
-    common::db::Pagination,
-};
+use proto_types::blog::meta::{BlogMeta, BlogMetaList};
+use proto_types::common::db::ProtoPagination;
 
 #[component]
 pub fn DatabaseTableBlogPage() -> impl IntoView {
@@ -59,11 +57,13 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
         });
 
     let table_view = move || {
-        async_data.get().map(|result| {
-            let data = result.unwrap().data;
-            let column_defs = column_defs.clone();
-            view! { <Table data column_defs /> }
-        })
+        async_data
+            .get()
+            .map(|result: Result<BlogMetaList, ServerFnError>| {
+                let data = result.unwrap().data;
+                let column_defs = column_defs.clone();
+                view! { <Table data column_defs /> }
+            })
     };
 
     view! {
@@ -78,7 +78,7 @@ pub fn DatabaseTableBlogPage() -> impl IntoView {
 
             <div class="flex gap-2 items-center">
                 <PaginationButton pagination direction=PaginationDirection::Prev />
-                <span>Page {move || pagination.get().page_index + 1}</span>
+                <span>Page {move || pagination.get().page_index() + 1}</span>
                 <PaginationButton pagination direction=PaginationDirection::Next />
             </div>
 
@@ -118,7 +118,9 @@ async fn delete_blog(id: String) -> Result<(), ServerFnError> {
 }
 
 #[server]
-async fn get_blog_metas(pagination: Pagination) -> Result<BlogMetaList, ServerFnError> {
+async fn get_blog_metas(
+    #[server(default)] pagination: ProtoPagination,
+) -> Result<BlogMetaList, ServerFnError> {
     use crate::state::ctx;
     use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
 
@@ -129,5 +131,6 @@ async fn get_blog_metas(pagination: Pagination) -> Result<BlogMetaList, ServerFn
         .await
         .map(|e| e.into_inner())
         .map_err(|status| ServerFnError::new(status.to_string()));
+    dbg!(&res);
     res
 }

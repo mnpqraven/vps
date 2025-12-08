@@ -1,7 +1,7 @@
 use leptos::{attr::any_attribute::AnyAttribute, prelude::*};
 use leptos_router::params::Params;
 use leptos_router::{components::A, hooks::use_query};
-use proto_types::{common::db::Pagination, impls::DefaultState};
+use proto_types::common::db::ProtoPagination;
 use strum::{Display, EnumString};
 
 use crate::ui::primitive::button::Button;
@@ -13,7 +13,7 @@ struct PaginationQuery {
     search: Option<String>,
 }
 
-impl From<PaginationQuery> for Pagination {
+impl From<PaginationQuery> for ProtoPagination {
     fn from(
         PaginationQuery {
             index,
@@ -25,20 +25,21 @@ impl From<PaginationQuery> for Pagination {
             page_index: index,
             page_size: size,
             search,
+            all: None,
         }
     }
 }
 
 pub struct PaginationState {
-    pub pagination: Signal<Pagination>,
+    pub pagination: Signal<ProtoPagination>,
     pub prev_params: Signal<String>,
     pub next_params: Signal<String>,
 }
 pub fn use_pagination() -> PaginationState {
     let query = use_query::<PaginationQuery>();
 
-    let default = Pagination::default_state();
-    let pagination: Signal<Pagination> = Signal::derive(move || {
+    let default = ProtoPagination::default();
+    let pagination: Signal<ProtoPagination> = Signal::derive(move || {
         query
             .read()
             .as_ref()
@@ -75,7 +76,7 @@ pub enum PaginationDirection {
 #[component]
 pub fn PaginationButton(
     #[prop(into)] direction: Signal<PaginationDirection>,
-    pagination: Signal<Pagination>,
+    pagination: Signal<ProtoPagination>,
     #[prop(optional)] attr: Vec<AnyAttribute>,
 ) -> impl IntoView {
     let params = Signal::derive(move || {

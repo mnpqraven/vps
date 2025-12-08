@@ -132,7 +132,7 @@ impl BlogTagDb {
 #[cfg(test)]
 #[serial_test::serial]
 mod tests {
-    use proto_types::{blog::tag::BlogTagShape, common::db::ProtoPagination};
+    use proto_types::{blog::tag::BlogTagShape, impls::Pagination};
 
     use crate::{DbError, get_db, table::blog_tag::BlogTagDb};
 
@@ -141,10 +141,11 @@ mod tests {
         let db = get_db().await?;
         let list = BlogTagDb::list(
             &db,
-            &ProtoPagination {
-                page_index: Some(0),
-                page_size: Some(100),
+            &Pagination {
+                page_index: 0,
+                page_size: 10,
                 search: Some("__cargo_test".into()),
+                all: true,
             },
         )
         .await?;
@@ -169,10 +170,11 @@ mod tests {
         // populated in list
         let list = BlogTagDb::list(
             &db,
-            &ProtoPagination {
-                page_index: Some(0),
-                page_size: Some(100),
+            &Pagination {
+                page_index: 0,
+                page_size: 100,
                 search: Some("__cargo_test".into()),
+                all: true,
             },
         )
         .await?;
@@ -186,10 +188,11 @@ mod tests {
     #[tokio::test]
     async fn blog_tag_3_update() -> Result<(), DbError> {
         let db = get_db().await?;
-        let pg = ProtoPagination {
-            page_index: Some(0),
-            page_size: Some(100),
+        let pg = Pagination {
+            page_index: 0,
+            page_size: 100,
             search: Some("__cargo_test".into()),
+            all: true,
         };
         let update_str = "__cargo_test_hello_title_updated";
 
@@ -215,10 +218,11 @@ mod tests {
     #[tokio::test]
     async fn blog_tag_4_delete() -> Result<(), DbError> {
         let db = get_db().await?;
-        let pg = ProtoPagination {
-            page_index: Some(0),
-            page_size: Some(100),
+        let pg = Pagination {
+            page_index: 0,
+            page_size: 100,
             search: Some("__cargo_test".into()),
+            all: true,
         };
         let list = BlogTagDb::list(&db, &pg).await?;
         let try_find = list.first();
@@ -236,10 +240,11 @@ mod tests {
         let db = get_db().await?;
         let list = BlogTagDb::list(
             &db,
-            &ProtoPagination {
-                page_index: Some(0),
-                page_size: Some(100),
+            &Pagination {
+                page_index: 0,
+                page_size: 100,
                 search: Some("__cargo_test".into()),
+                all: true,
             },
         )
         .await?;

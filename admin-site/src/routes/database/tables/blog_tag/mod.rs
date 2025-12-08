@@ -9,10 +9,8 @@ use crate::utils::pagination::{PaginationDirection, PaginationState, use_paginat
 use crate::utils::router::RouterKey;
 use leptos::prelude::*;
 use leptos_router::components::A;
-use proto_types::{
-    blog::tag::{BlogTag, BlogTagList},
-    common::db::Pagination,
-};
+use proto_types::blog::tag::{BlogTag, BlogTagList};
+use proto_types::common::db::ProtoPagination;
 
 pub mod create;
 
@@ -22,6 +20,7 @@ pub fn DatabaseTableBlogTagPage() -> impl IntoView {
     provide_context(action);
 
     let PaginationState { pagination, .. } = use_pagination();
+    dbg!(&pagination);
     let (pending, set_pending) = signal(false);
 
     let async_data = Resource::new(
@@ -48,10 +47,12 @@ pub fn DatabaseTableBlogTagPage() -> impl IntoView {
         });
 
     let table_view = move || {
-        async_data.get().map(|result| {
-            let data = result.unwrap().data;
-            view! { <Table data column_defs=column_defs.clone() /> }
-        })
+        async_data
+            .get()
+            .map(|result: Result<BlogTagList, ServerFnError>| {
+                result.map(|e| e.data).unwrap_or_default()
+            })
+            .map(|data| view! { <Table data column_defs=column_defs.clone() /> })
     };
 
     view! {
@@ -66,7 +67,7 @@ pub fn DatabaseTableBlogTagPage() -> impl IntoView {
 
             <div class="flex gap-2 items-center">
                 <PaginationButton pagination direction=PaginationDirection::Prev />
-                <span>Page {move || pagination.get().page_index + 1}</span>
+                <span>Page {move || pagination.get().page_index() + 1}</span>
                 <PaginationButton pagination direction=PaginationDirection::Next />
             </div>
 
@@ -106,7 +107,9 @@ async fn delete_tag(id: String) -> Result<(), ServerFnError> {
 }
 
 #[server]
-pub async fn get_blog_tags(pagination: Pagination) -> Result<BlogTagList, ServerFnError> {
+pub async fn get_blog_tags(
+    #[server(default)] pagination: ProtoPagination,
+) -> Result<BlogTagList, ServerFnError> {
     use crate::state::ctx;
     use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
 

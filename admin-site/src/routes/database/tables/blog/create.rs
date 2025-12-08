@@ -11,7 +11,7 @@ use crate::{
 };
 use leptos::prelude::*;
 use leptos_router::hooks::use_params_map;
-use proto_types::{blog::root::Blog, common::db::Pagination};
+use proto_types::{blog::root::Blog, common::db::ProtoPagination};
 
 #[component]
 pub fn BlogFormPage() -> impl IntoView {
@@ -154,10 +154,11 @@ fn TagsSelector(#[prop(into)] default_value: Signal<Option<Blog>>) -> impl IntoV
     let async_data = Resource::new(
         move || (),
         |_| {
-            get_blog_tags(Pagination {
-                page_index: 0,
-                page_size: 1000,
-                search: String::new(),
+            get_blog_tags(ProtoPagination {
+                page_index: None,
+                page_size: None,
+                search: None,
+                all: Some(true),
             })
         },
     );

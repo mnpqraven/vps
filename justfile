@@ -2,7 +2,7 @@ layout:
     zellij -l .zellij/servers.kdl
 
 dev-admin:
-    cargo leptop watch
+    cargo leptos watch
 dev-rpc:
     cargo run --package vps-rpc
 dev-api:
