@@ -17,14 +17,13 @@ use vps_rpc::RPC_URL;
 #[utoipa::path(
     get,
     path = "",
-    params(Pagination),
+    params(ProtoPagination),
     responses(
         (status = OK, description = "Success", body = BlogTagList)
     )
 )]
-async fn list(Query(pagination): Query<Pagination>) -> Result<Json<BlogTagList>, ApiError> {
+async fn tag_list(Query(pg): Query<ProtoPagination>) -> Result<Json<BlogTagList>, ApiError> {
     let mut client = BlogTagServiceClient::connect(RPC_URL).await?;
-    let pg: ProtoPagination = pagination.into();
     let res = client.list(pg).await?;
     Ok(Json(res.into_inner()))
 }
@@ -97,7 +96,7 @@ async fn delete(Path(id): Path<Id>) -> Result<Json<Id>, ApiError> {
 
 pub fn router() -> OpenApiRouter {
     OpenApiRouter::new()
-        .routes(routes!(list)) // /
+        .routes(routes!(tag_list)) // /
         .routes(routes!(create)) // /create
         .routes(routes!(get_by_id, update, delete)) // /{id}
 }

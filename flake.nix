@@ -95,6 +95,7 @@
           # TODO: better env
           shellHook = ''
             export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
+            export TS_RS_EXPORT_DIR="../../othi-tss/src/bindings"
             export RUSTFLAGS="--cfg erase_components"
           '';
           nativeBuildInputs = with pkgs; [
@@ -109,7 +110,6 @@
             grpcurl
             sqlx-cli
 
-            tailwindcss_4
             rustup
             # cron-ddns dep
             dig
