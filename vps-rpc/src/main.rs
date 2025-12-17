@@ -6,10 +6,12 @@ use proto_types::{
         tag::blog_tag_service_server::BlogTagServiceServer,
     },
     greeter_server::GreeterServer,
+    service::health_service_server::HealthServiceServer,
 };
 use services::{
     database::blog::{BlogRpc, meta::BlogMetaRpc, tag::BlogTagRpc},
     greeter::GreeterRpc,
+    health::HealthRpc,
 };
 use tonic::transport::Server;
 use vps_rpc::{
@@ -33,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_encoded_file_descriptor_set(DESCRIPTOR_SET)
         .build_v1alpha()?;
 
-    tracing::info!("RUNNING gRPC SERVER @ {RPC_ADDR}");
+    tracing::info!("[BOOT] gRPC SERVER @ {RPC_ADDR}");
 
     Server::builder()
         .accept_http1(true)
@@ -41,12 +43,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(grpc_web())
         .trace_fn(|_| tracing::debug_span!("rpc"))
         .add_service(descriptor_service)
-        .add_service(GreeterServer::new(GreeterRpc::default()))
+        .add_service(GreeterServer::new(GreeterRpc))
+        .add_service(HealthServiceServer::new(HealthRpc))
         .add_service(BlogTagServiceServer::new(BlogTagRpc { conn: db.clone() }))
         .add_service(BlogMetaServiceServer::new(BlogMetaRpc { conn: db.clone() }))
         .add_service(BlogServiceServer::new(BlogRpc { conn: db.clone() }))
         .serve(RPC_ADDR.parse()?)
         .await?;
 
+    tracing::debug!("[SHUTDOWN] rpc");
     Ok(())
 }

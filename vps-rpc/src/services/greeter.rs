@@ -1,9 +1,9 @@
-use proto_types::{greeter_server::Greeter, HelloReply, HelloRequest};
+use proto_types::{HelloReply, HelloRequest, greeter_server::Greeter};
 use tonic::{Request, Response, Status};
 use tracing::Level;
 
 #[derive(Debug, Default)]
-pub struct GreeterRpc {}
+pub struct GreeterRpc;
 
 #[tonic::async_trait]
 impl Greeter for GreeterRpc {

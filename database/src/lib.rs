@@ -8,12 +8,10 @@ pub use utils::error::DbError;
 
 pub async fn get_db() -> Result<sqlx::Pool<sqlx::Postgres>, DbError> {
     let db_url = EnvSchema::load()?.db_url();
-    // TODO: omit
-    tracing::info!("Connecting to database @ {}", &db_url);
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://postgres:postgres@localhost/mydatabase")
+        .connect(&db_url)
         .await?;
     Ok(pool)
 }

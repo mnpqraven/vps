@@ -37,3 +37,6 @@ tokio = { version = "1.45.0", features = ["full"] }
 axum = "0.8.0"
 thiserror = "2.0.12"
 anyhow = "1.0.98"
+tonic = "0.13.1"
+tonic-reflection = "0.13.1"
+tonic-web = "0.13.1"

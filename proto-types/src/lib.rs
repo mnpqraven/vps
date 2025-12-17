@@ -3,15 +3,16 @@
 pub mod derived;
 pub mod impls;
 
-pub use tonic::Status;
-
 pub const DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("descriptor");
+
+pub type TonicResult<T> = Result<tonic::Response<T>, tonic::Status>;
 
 tonic::include_proto!("helloworld");
 
 pub mod service {
     tonic::include_proto!("service");
     tonic::include_proto!("repo");
+    tonic::include_proto!("health");
 }
 
 pub mod blog {

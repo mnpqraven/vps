@@ -23,7 +23,17 @@ pub struct EnvSchema {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct EnvSchemaRpc {
-    port: i32,
+    pub base_url: String,
+    /// main server that is exposed to the api server
+    /// later down the line servers in this port should be splitted to other services
+    pub main_port: i32,
+    pub cron_port: i32,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub enum RpcTarget {
+    Main,
+    Cron,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -83,7 +93,11 @@ impl EnvSchema {
 
 impl Default for EnvSchemaRpc {
     fn default() -> Self {
-        Self { port: 5005 }
+        Self {
+            base_url: "127.0.0.1".into(),
+            main_port: 5005,
+            cron_port: 5006,
+        }
     }
 }
 
@@ -99,8 +113,22 @@ impl Default for EnvSchemaDatabase {
 }
 
 impl EnvSchemaRpc {
+    /// rpc server address that should only be used in main startup and serve configurations
+    pub fn addr(&self, target: &RpcTarget) -> String {
+        format!("{}:{}", self.base_url, self.target_port(target))
+    }
+    /// grpc url endpoint, this should be used in `connect` functions to connect to a rpc client
+    pub fn url(&self, target: &RpcTarget) -> String {
+        format!("grpc://{}:{}", self.base_url, self.target_port(target))
+    }
+    pub fn target_port(&self, target: &RpcTarget) -> i32 {
+        match target {
+            RpcTarget::Main => self.main_port,
+            RpcTarget::Cron => self.cron_port,
+        }
+    }
     pub fn client_url(&self) -> String {
-        format!("grpc://127.0.0.1:{}", self.port)
+        format!("grpc://127.0.0.1:{}", self.main_port)
     }
 }
 

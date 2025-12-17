@@ -1,5 +1,7 @@
 [rpc]
-port = 5005
+base_url = "127.0.0.1"
+main_port = 5005
+cron_port = 5006
 
 [database]
 user = "postgres"

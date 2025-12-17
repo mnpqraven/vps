@@ -4,10 +4,13 @@ layout {
     }
     pane split_direction="vertical" {
         pane borderless=false command="cargo" {
-        	args "run" "--bin" "vps-rpc"
+        	args "run" "--package" "vps-rpc"
         }
 	    pane borderless=false command="cargo" {
-	    	args "run" "--bin" "vps-api"
+	    	args "run" "--package" "vps-api"
+	    }
+	    pane borderless=false command="cargo" {
+	    	args "run" "--package" "cron-ddns"
 	    }
     }
     pane split_direction="vertical" {

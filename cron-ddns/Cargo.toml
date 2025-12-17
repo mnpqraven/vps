@@ -19,3 +19,6 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 reqwest = { version = "0.12.24", features = ["json"] }
 serde_json = "1.0.145"
+tonic.workspace = true
+proto-types = { path = "../proto-types" }
+futures = "0.3.31"
