@@ -67,7 +67,7 @@
           pname = "admin-site";
           src = ./.;
           gitSubmodules = true;
-          cargoBuild = ''cargo leptos build'';
+          cargoBuild = "cargo leptos build";
           PROTOC = with pkgs; lib.getExe protobuf;
         };
       in
@@ -119,6 +119,7 @@
 
             # for wasm-opt building on release
             binaryen
+            wasm-bindgen-cli_0_2_108
             cargo-generate
             cargo-leptos
             leptosfmt

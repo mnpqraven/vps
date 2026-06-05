@@ -9,6 +9,7 @@ use crate::utils::pagination::{PaginationDirection, PaginationState, use_paginat
 use crate::utils::router::RouterKey;
 use leptos::prelude::*;
 use leptos_router::components::A;
+use load_env::schema::RpcTarget;
 use proto_types::blog::tag::{BlogTag, BlogTagList};
 use proto_types::common::db::ProtoPagination;
 
@@ -99,7 +100,7 @@ async fn delete_tag(id: String) -> Result<(), ServerFnError> {
     use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
     use proto_types::common::db::Id;
 
-    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_env.url(&RpcTarget::Main)).await?;
     match rpc.delete(Id { id }).await {
         Ok(_) => Ok(()),
         Err(status) => Err(ServerFnError::new(status.to_string())),
@@ -113,7 +114,7 @@ pub async fn get_blog_tags(
     use crate::state::ctx;
     use proto_types::blog::tag::blog_tag_service_client::BlogTagServiceClient;
 
-    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_env.base_url).await?;
 
     let res = rpc
         .list(pagination)

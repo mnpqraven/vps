@@ -11,6 +11,7 @@ use crate::{
 };
 use leptos::prelude::*;
 use leptos_router::hooks::use_params_map;
+use load_env::schema::RpcTarget;
 use proto_types::{blog::root::Blog, common::db::ProtoPagination};
 
 #[component]
@@ -114,7 +115,7 @@ async fn create_blog(
     use proto_types::blog::meta::BlogMetaShape;
     use proto_types::blog::root::{BlogShape, blog_service_client::BlogServiceClient};
 
-    let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogServiceClient::connect(ctx()?.rpc_env.url(&RpcTarget::Main)).await?;
 
     let payload = BlogShape {
         meta_shape: Some(BlogMetaShape {
@@ -141,7 +142,7 @@ async fn get_blog(id: Option<String>) -> Result<Option<Blog>, ServerFnError> {
     use proto_types::common::db::Id;
 
     if let Some(id) = id {
-        let mut rpc = BlogServiceClient::connect(ctx()?.rpc_url).await?;
+        let mut rpc = BlogServiceClient::connect(ctx()?.rpc_env.base_url).await?;
         let res = rpc.detail(Id { id }).await?.into_inner();
         leptos::logging::log!("{res:?}");
         return Ok(Some(res));

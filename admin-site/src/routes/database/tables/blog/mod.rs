@@ -107,10 +107,11 @@ fn TableAction(id: String) -> impl IntoView {
 #[server]
 async fn delete_blog(id: String) -> Result<(), ServerFnError> {
     use crate::state::ctx;
+    use load_env::schema::RpcTarget;
     use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
     use proto_types::common::db::Id;
 
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_env.url(&RpcTarget::Main)).await?;
     match rpc.delete(Id { id }).await {
         Ok(_) => Ok(()),
         Err(status) => Err(ServerFnError::new(status.to_string())),
@@ -122,9 +123,10 @@ async fn get_blog_metas(
     #[server(default)] pagination: ProtoPagination,
 ) -> Result<BlogMetaList, ServerFnError> {
     use crate::state::ctx;
+    use load_env::schema::RpcTarget;
     use proto_types::blog::meta::blog_meta_service_client::BlogMetaServiceClient;
 
-    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogMetaServiceClient::connect(ctx()?.rpc_env.url(&RpcTarget::Main)).await?;
 
     let res = rpc
         .list(pagination)

@@ -98,7 +98,7 @@ async fn blog_tag_form_action(
     use proto_types::common::db::Id;
     use std::time::SystemTime;
 
-    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
+    let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_env.base_url).await?;
 
     match mode {
         FormMode::Create => {
@@ -132,7 +132,7 @@ async fn get_blog_tag(id: Option<String>) -> Result<Option<BlogTag>, ServerFnErr
     use proto_types::common::db::Id;
 
     if let Some(id) = id {
-        let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_url).await?;
+        let mut rpc = BlogTagServiceClient::connect(ctx()?.rpc_env.base_url).await?;
         let res = rpc.get_by_id(Id { id }).await?.into_inner();
         return Ok(Some(res));
     }
