@@ -18,6 +18,9 @@ pub enum ApiError {
 
     #[error("Unknown error: {0}")]
     Unknown(anyhow::Error),
+
+    #[error("Unauthorized")]
+    Authorization,
 }
 
 impl ApiError {
@@ -29,6 +32,7 @@ impl ApiError {
             }
             ApiError::RpcConnection(_error) => StatusCode::SERVICE_UNAVAILABLE,
             ApiError::ParseError(_) => StatusCode::BAD_REQUEST,
+            ApiError::Authorization => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

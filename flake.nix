@@ -108,6 +108,7 @@
             grpcui
             grpcurl
             sqlx-cli
+            bruno
 
             rustup
             # cron-ddns dep
