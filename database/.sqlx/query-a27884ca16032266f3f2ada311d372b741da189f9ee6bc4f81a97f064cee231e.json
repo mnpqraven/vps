@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO blog_meta_tag_map (blog_meta_id, blog_tag_id)\n                    SELECT * FROM UNNEST($1::text[], $2::text[])\n                RETURNING *\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "blog_meta_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "blog_tag_id",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "a27884ca16032266f3f2ada311d372b741da189f9ee6bc4f81a97f064cee231e"
+}

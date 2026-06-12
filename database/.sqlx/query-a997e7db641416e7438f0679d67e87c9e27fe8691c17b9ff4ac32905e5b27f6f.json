@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT id, code, label, created_at, updated_at\n                FROM blog_meta_tag_map\n                JOIN blog_tag ON blog_tag.id = blog_meta_tag_map.blog_tag_id\n                WHERE blog_meta_tag_map.blog_meta_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "updated_at",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a997e7db641416e7438f0679d67e87c9e27fe8691c17b9ff4ac32905e5b27f6f"
+}
