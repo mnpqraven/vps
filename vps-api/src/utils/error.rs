@@ -21,6 +21,9 @@ pub enum ApiError {
 
     #[error("Unauthorized")]
     Authorization,
+
+    #[error("Bad enviroment: ${0}")]
+    Env(#[from] load_env::EnvError),
 }
 
 impl ApiError {

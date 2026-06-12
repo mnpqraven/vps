@@ -1,9 +1,12 @@
+pub mod auth;
 pub mod blog;
 pub mod gacha;
 pub mod health;
 pub mod rpcgreet;
 
-use axum::routing::get;
+use crate::{middlewares::github::oauth_client, utils::state::AppState};
+use axum::{Extension, routing::get};
+use oauth2::reqwest;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_rapidoc::RapiDoc;
@@ -27,9 +30,24 @@ pub fn make_app_router() -> axum::Router {
 }
 
 pub fn app_router() -> OpenApiRouter {
+    let state = AppState::new();
+    // TODO: unwrap
+    // there should be a cleaner way
+    let auth_client = oauth_client().unwrap();
+    let http_client = reqwest::ClientBuilder::new()
+        // Following redirects opens the client up to SSRF vulnerabilities.
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Client should build");
+
     OpenApiRouter::new()
         // `GET /` goes to `root`
         .route("/", get(root).post(root))
+        .route("/auth/login", get(auth::login))
+        .route("/auth/github_callback", get(auth::github_callback))
+        .layer(Extension(auth_client))
+        .layer(Extension(http_client))
+        .with_state(state)
         .nest("/api/health", health::router())
         .nest("/api/rpcgreet", rpcgreet::router())
         .nest("/api/gacha/pull_simulation", gacha::router())

@@ -19,6 +19,7 @@ pub struct EnvSchema {
     pub database: EnvSchemaDatabase,
     pub rpc: EnvSchemaRpc,
     pub cloudflare: EnvCloudflare,
+    pub auth: EnvOAuth,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -50,6 +51,17 @@ pub struct EnvCloudflare {
     pub zone_id: String,
     pub api_token: String,
     pub email: String,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvOAuth {
+    pub github: EnvOAuthGithub,
+}
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Debug)]
+pub struct EnvOAuthGithub {
+    pub client_id: String,
+    pub client_secret: String,
+    pub redirect_url: String,
 }
 
 impl EnvSchemaDatabase {

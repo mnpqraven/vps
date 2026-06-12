@@ -16,3 +16,5 @@ debug/
 .vps
 admin-site/tailwind.config.js
 result
+
+.collections

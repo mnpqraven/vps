@@ -14,3 +14,7 @@ record_id = ""
 zone_id = ""
 api_token = ""
 email = ""
+
+[auth]
+github_client_id = ""
+github_client_secret = ""

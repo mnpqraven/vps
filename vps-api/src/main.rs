@@ -2,6 +2,7 @@ use crate::routes::make_app_router;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 
+pub mod middlewares;
 pub mod routes;
 pub mod utils;
 
