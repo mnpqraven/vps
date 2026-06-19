@@ -13,6 +13,7 @@ pub mod service {
     tonic::include_proto!("service");
     tonic::include_proto!("repo");
     tonic::include_proto!("health");
+    tonic::include_proto!("auth");
 }
 
 pub mod blog {

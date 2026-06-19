@@ -6,9 +6,10 @@ use proto_types::{
         tag::blog_tag_service_server::BlogTagServiceServer,
     },
     greeter_server::GreeterServer,
-    service::health_service_server::HealthServiceServer,
+    service::{auth_service_server::AuthServiceServer, health_service_server::HealthServiceServer},
 };
 use services::{
+    auth::AuthRpc,
     database::blog::{BlogRpc, meta::BlogMetaRpc, tag::BlogTagRpc},
     greeter::GreeterRpc,
     health::HealthRpc,
@@ -45,6 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(descriptor_service)
         .add_service(GreeterServer::new(GreeterRpc))
         .add_service(HealthServiceServer::new(HealthRpc))
+        .add_service(AuthServiceServer::new(AuthRpc { conn: db.clone() }))
         .add_service(BlogTagServiceServer::new(BlogTagRpc { conn: db.clone() }))
         .add_service(BlogMetaServiceServer::new(BlogMetaRpc { conn: db.clone() }))
         .add_service(BlogServiceServer::new(BlogRpc { conn: db.clone() }))

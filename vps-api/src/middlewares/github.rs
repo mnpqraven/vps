@@ -1,5 +1,5 @@
 use crate::utils::error::ApiError;
-use load_env::schema::{EnvOAuth, EnvOAuthGithub};
+use load_env::schema::EnvOAuthGithub;
 use oauth2::{
     AuthUrl, ClientId, ClientSecret, EmptyExtraTokenFields, EndpointNotSet, EndpointSet,
     RedirectUrl, RevocationErrorResponseType, StandardErrorResponse, StandardRevocableToken,

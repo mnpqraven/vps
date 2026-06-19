@@ -1,6 +1,6 @@
 use proto_types::{
     TonicResult,
-    service::{HealthResponse, health_service_server::HealthService},
+    service::{HealthResponse, health_service_server::AuthService},
 };
 use tonic::Request;
 
@@ -8,7 +8,7 @@ use tonic::Request;
 pub struct CronHealthRpc;
 
 #[tonic::async_trait]
-impl HealthService for CronHealthRpc {
+impl AuthService for CronHealthRpc {
     async fn health(&self, _request: Request<()>) -> TonicResult<HealthResponse> {
         Ok(HealthResponse {
             response: "ok from cron rpc".into(),
