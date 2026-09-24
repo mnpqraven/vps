@@ -36,7 +36,7 @@ impl IpKind {
 pub async fn update_cf_conf(_job: Reminder, ctx: CronContext<Local>) -> Result<(), CronDdnsError> {
     let time = ctx.get_timestamp();
     info!("[CRON] timestamp: {}", time);
-    let cf_env = EnvSchema::load()?.cloudflare;
+    let cf_env = EnvSchema::load_new_cf_from_sops()?;
 
-    crons::cloudflare::cf_zone_api(cf_env).await
+    crons::cloudflare::cf_set_zone_api(cf_env).await
 }

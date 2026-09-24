@@ -2,7 +2,7 @@ use crate::{IpKind, utils::error::CronDdnsError};
 use load_env::schema::EnvCloudflare;
 use serde::Serialize;
 use std::process::Command;
-use tracing::info;
+use tracing::{debug, info};
 
 #[derive(Serialize)]
 struct ApiBody {
@@ -13,30 +13,29 @@ struct ApiBody {
     content: String,
 }
 
-pub async fn cf_zone_api(conf: EnvCloudflare) -> Result<(), CronDdnsError> {
+pub async fn cf_set_zone_api(conf: EnvCloudflare) -> Result<(), CronDdnsError> {
     let ip = public_ip(IpKind::V4);
     let EnvCloudflare {
         record_id,
         zone_id,
         api_token,
-        email,
     } = conf;
     let url =
         format!("https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record_id}");
     let body = ApiBody {
         id: zone_id,
-        proxied: false,
+        proxied: true,
         r#type: "A".to_string(),
         name: "othi.dev".to_string(),
         content: ip,
     };
     let client = reqwest::Client::new();
+    let auth_header = format!("Bearer {api_token}");
 
     // https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/update/
     let res = client
         .put(url)
-        .header("X-Auth-Email", email)
-        .header("X-Auth-Key", api_token)
+        .header("Authorization", auth_header)
         .json(&body)
         .send()
         .await
@@ -46,20 +45,15 @@ pub async fn cf_zone_api(conf: EnvCloudflare) -> Result<(), CronDdnsError> {
         .text()
         .await
         .map_err(|e| CronDdnsError::Unknown(e.to_string()))?;
-    info!(response);
+    debug!(response);
+    info!("DNS configurations updated");
     Ok(())
 }
 
 fn public_ip(kind: IpKind) -> String {
     // dig -6 TXT +short o-o.myaddr.l.google.com @ns1.google.com
     let cmd = Command::new("dig")
-        .args([
-            kind.dig_args(),
-            "TXT",
-            "+short",
-            "o-o.myaddr.l.google.com",
-            "@ns1.google.com",
-        ])
+        .args([kind.dig_args(), "TXT", "+short", "o-o.myaddr.l.google.com"])
         .output();
     let result = cmd.expect("is dig installed ?").stdout;
     String::from_utf8(result)

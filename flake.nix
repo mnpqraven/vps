@@ -4,100 +4,146 @@
   inputs = {
     self.submodules = true;
 
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    naersk.url = "github:nix-community/naersk";
+    crane.url = "github:ipetkov/crane";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-mozilla = {
-      url = "github:mozilla/nixpkgs-mozilla";
-      flake = false;
-    };
   };
 
   outputs =
     {
+      self,
       nixpkgs,
-      naersk,
       flake-utils,
-      nixpkgs-mozilla,
+      crane,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = (import nixpkgs) {
-          inherit system;
-          overlays = [
-            (import nixpkgs-mozilla)
+        pkgs = nixpkgs.legacyPackages.${system};
+
+        inherit (pkgs) lib;
+
+        craneLib = crane.mkLib pkgs;
+        src = craneLib.cleanCargoSource ./.;
+
+        # Common arguments can be set here to avoid repeating them later
+        commonArgs = {
+          inherit src;
+          strictDeps = true;
+
+          nativeBuildInputs = with pkgs; [
+            pkg-config
           ];
-        };
-        toolchain =
-          (pkgs.rustChannelOf {
-            rustToolchain = ./rust-toolchain.toml;
-            sha256 = "sha256-442fNe+JZCKeR146x4Nh0O00XeAfPWMalJDbV+vJQNg=";
-          }).rust;
-        naersk' = pkgs.callPackage naersk {
-          cargo = toolchain;
-          rustc = toolchain;
-        };
-        buildPackage =
-          let
-            packageOpt =
-              pname: opts:
-              opts
-              ++ [
-                "-p"
-                pname
-              ];
-          in
-          pname:
-          naersk'.buildPackage {
-            inherit pname;
-            src = ./.;
-            gitSubmodules = true;
-            cargoBuildOptions = packageOpt pname;
-            cargoTestOptions = packageOpt pname;
-            PROTOC = with pkgs; lib.getExe protobuf;
-          };
-
-        vps-rpc = buildPackage "vps-rpc";
-        cron-ddns = buildPackage "cron-ddns";
-
-        # TODO: leptos build
-        admin-site = naersk'.buildPackage {
-          pname = "admin-site";
-          src = ./.;
-          gitSubmodules = true;
-          cargoBuild = ''cargo leptos build'';
+          buildInputs =
+            with pkgs;
+            [
+              openssl
+            ]
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+              # Additional darwin specific inputs can be set here
+              pkgs.libiconv
+            ];
+          # Additional environment variables can be set directly
           PROTOC = with pkgs; lib.getExe protobuf;
         };
-      in
-      {
-        packages = {
-          inherit
-            # prod binaries
-            admin-site
-            vps-rpc
-            cron-ddns
-            ;
+
+        # Build *just* the cargo dependencies (of the entire workspace),
+        # so we can reuse all of that work (e.g. via cachix) when running in CI
+        # It is *highly* recommended to use something like cargo-hakari to avoid
+        # cache misses when building individual top-level-crates
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
+        individualCrateArgs = commonArgs // {
+          inherit cargoArtifacts;
+          inherit (craneLib.crateNameFromCargoToml { inherit src; }) version;
+          # NB: we disable tests since we'll run them all via cargo-nextest
+          doCheck = false;
         };
 
-        apps.rpcWeb = {
-          type = "app";
-          program = with pkgs; lib.getExe rpcWeb;
+        fileSetForCrate =
+          crate:
+          lib.fileset.toSource {
+            root = ./.;
+            fileset = lib.fileset.unions [
+              ./Cargo.toml
+              ./Cargo.lock
+              # (craneLib.fileset.commonCargoSources ./crates/my-common)
+              # (craneLib.fileset.commonCargoSources ./crates/my-workspace-hack)
+              (craneLib.fileset.commonCargoSources crate)
+            ];
+          };
+
+        # Build the top-level crates of the workspace as individual derivations.
+        # This allows consumers to only depend on (and build) only what they need.
+        # Though it is possible to build the entire workspace as a single derivation,
+        # so this is left up to you on how to organize things
+        #
+        # Note that the cargo workspace must define `workspace.members` using wildcards,
+        # otherwise, omitting a crate (like we do below) will result in errors since
+        # cargo won't be able to find the sources for all members.
+        cron-ddns = craneLib.buildPackage (
+          individualCrateArgs
+          // {
+            pname = "cron-ddns";
+            cargoExtraArgs = "-p cron-ddns";
+            src = fileSetForCrate ./cron-ddns;
+          }
+        );
+
+        # TODO: leptos build
+        # admin-site = naersk'.buildPackage {
+        #   pname = "admin-site";
+        #   src = ./.;
+        #   gitSubmodules = true;
+        #   cargoBuild = "cargo leptos build";
+        #   PROTOC = with pkgs; lib.getExe protobuf;
+        # };
+      in
+      {
+        checks = {
+          inherit cron-ddns;
+
+          # Run clippy (and deny all warnings) on the workspace source,
+          # again, reusing the dependency artifacts from above.
+          #
+          # Note that this is done as a separate derivation so that
+          # we can block the CI if there are issues here, but not
+          # prevent downstream consumers from building our crate by itself.
+          my-workspace-clippy = craneLib.cargoClippy (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+            }
+          );
         };
-        apps.layout = {
-          type = "app";
-          program = with pkgs; lib.getExe layout;
+
+        # prod binaries
+        packages = {
+          inherit cron-ddns;
+        };
+
+        apps = {
+          cron-ddns = flake-utils.lib.mkApp {
+            drv = cron-ddns;
+          };
         };
 
         # nix develop
-        devShell = pkgs.mkShell {
+        devShells.default = craneLib.devShell {
+          # Inherit inputs from checks.
+          checks = self.checks.${system};
+
           # TODO: better env
+
           shellHook = ''
             export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
             export RUSTFLAGS="--cfg erase_components"
           '';
-          nativeBuildInputs = with pkgs; [
+          packages = with pkgs; [
+            rust-analyzer
+
             just
             # TODO: fix autocomplete error
             # rustc

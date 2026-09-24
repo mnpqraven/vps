@@ -49,7 +49,6 @@ pub struct EnvCloudflare {
     pub record_id: String,
     pub zone_id: String,
     pub api_token: String,
-    pub email: String,
 }
 
 impl EnvSchemaDatabase {
@@ -76,6 +75,38 @@ impl EnvSchema {
         })?;
 
         let env = toml::from_str::<EnvSchema>(&conf_str)?;
+
+        Ok(env)
+    }
+
+    // new fn that get secrets from sops
+    // right now we can hard code
+    //
+    // vps_cloudflare_record_id
+    // vps_cloudflare_zone_id
+    // vps_cloudflare_api_token
+    pub fn load_new_cf_from_sops() -> Result<EnvCloudflare, EnvError> {
+        let path_vps_cloudflare_record_id = read_to_string("/run/secrets/vps_cloudflare_record_id")
+            .map_err(|source| EnvError::Io {
+                file_name: Some("vps_cloudflare_record_id".into()),
+                source,
+            })?;
+        let path_vps_cloudflare_zone_id = read_to_string("/run/secrets/vps_cloudflare_zone_id")
+            .map_err(|source| EnvError::Io {
+                file_name: Some("vps_cloudflare_zone_id".into()),
+                source,
+            })?;
+        let path_vps_cloudflare_api_token = read_to_string("/run/secrets/vps_cloudflare_api_token")
+            .map_err(|source| EnvError::Io {
+                file_name: Some("vps_cloudflare_api_token".into()),
+                source,
+            })?;
+
+        let env = EnvCloudflare {
+            record_id: path_vps_cloudflare_record_id,
+            zone_id: path_vps_cloudflare_zone_id,
+            api_token: path_vps_cloudflare_api_token,
+        };
 
         Ok(env)
     }
