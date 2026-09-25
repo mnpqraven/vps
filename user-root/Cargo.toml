@@ -42,7 +42,7 @@ ssr = [
 
 # See https://github.com/leptos-rs/cargo-leptos for documentation of all the parameters.
 [package.metadata.leptos]
-output-name = "admin-site"
+output-name = "user-root"
 site-root = "target/site"
 site-pkg-dir = "pkg"
 tailwind-input-file = "input.css"

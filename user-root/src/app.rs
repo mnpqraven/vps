@@ -17,7 +17,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 // injects a stylesheet into the document <head>
                 // id=leptos means cargo-leptos will hot-reload this stylesheet
-                <Stylesheet id="leptos" href="/pkg/admin-site.css" />
+                <Stylesheet id="leptos" href="/pkg/user-root.css" />
                 <AutoReload options=options.clone() />
                 <HydrationScripts options />
                 <MetaTags />
