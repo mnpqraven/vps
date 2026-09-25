@@ -1,10 +1,10 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    use admin_site::{app::*, state::AppContext};
     use axum::Router;
     use leptos::{config::get_configuration, logging::log, prelude::provide_context};
-    use leptos_axum::{generate_route_list, LeptosRoutes};
+    use leptos_axum::{LeptosRoutes, generate_route_list};
+    use user_root::{app::*, state::AppContext};
 
     tracing_subscriber::fmt::fmt()
         .with_max_level(tracing::Level::INFO)

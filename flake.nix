@@ -7,6 +7,10 @@
     crane.url = "github:ipetkov/crane";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -15,16 +19,22 @@
       nixpkgs,
       flake-utils,
       crane,
+      rust-overlay,
       ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ (import rust-overlay) ];
+        };
 
         inherit (pkgs) lib;
 
-        craneLib = crane.mkLib pkgs;
+        craneLib = (crane.mkLib pkgs).overrideToolchain (
+          p: p.rust-bin.nightly.latest.default.override { targets = [ "wasm32-unknown-unknown" ]; }
+        );
         src = craneLib.cleanCargoSource ./.;
 
         # Common arguments can be set here to avoid repeating them later
@@ -39,6 +49,7 @@
             with pkgs;
             [
               openssl
+              wasm-bindgen-cli
             ]
             ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
               # Additional darwin specific inputs can be set here
@@ -144,10 +155,7 @@
 
             just
             # TODO: fix autocomplete error
-            # rustc
-            # cargo
             tailwindcss_4
-            rustup
             bacon
             grpcui
             grpcurl
