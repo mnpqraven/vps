@@ -1,3 +1,3 @@
 [submodule "proto-types/proto"]
 	path = proto-types/proto
-	url = git@github.com:mnpqraven/vps-proto.git
+	url = https://github.com/mnpqraven/vps-proto.git
