@@ -4364,6 +4364,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "user-root"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "console_error_panic_hook",
+ "leptos",
+ "leptos-use",
+ "leptos_axum",
+ "leptos_meta",
+ "leptos_router",
+ "load-env",
+ "proto-types",
+ "serde",
+ "strum",
+ "tailwind_fuse",
+ "thiserror 2.0.17",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "utf-8"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"

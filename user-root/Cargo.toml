@@ -1,0 +1,56 @@
+[package]
+name = "user-root"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+leptos.workspace = true
+leptos_router.workspace = true
+leptos_axum = { workspace = true, optional = true }
+leptos_meta.workspace = true
+axum = { workspace = true, optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+tokio = { workspace = true, features = ["rt-multi-thread"], optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+proto-types = { path = "../proto-types", default-features = false }
+load-env = { path = "../load-env" }
+serde.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tailwind_fuse = { version = "0.3.2", features = ["variant"] }
+leptos-use = "0.16.0-beta2"
+strum = { version = "0.27.1", features = ["derive"] }
+thiserror.workspace = true
+anyhow.workspace = true
+
+[features]
+hydrate = ["leptos/hydrate", "dep:console_error_panic_hook", "dep:wasm-bindgen"]
+ssr = [
+  "proto-types/transport",
+  "dep:axum",
+  "dep:tokio",
+  "leptos-use/ssr",
+  "leptos-use/axum",
+  "dep:leptos_axum",
+  "leptos/ssr",
+  "leptos_meta/ssr",
+  "leptos_router/ssr",
+]
+
+# See https://github.com/leptos-rs/cargo-leptos for documentation of all the parameters.
+[package.metadata.leptos]
+output-name = "admin-site"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+tailwind-input-file = "input.css"
+assets-dir = "public"
+site-addr = "127.0.0.1:5010"
+reload-port = 3001
+browserquery = "defaults"
+env = "DEV"
+bin-features = ["ssr"]
+lib-features = ["hydrate"]
+lib-profile-release = "wasm-release"

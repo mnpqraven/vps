@@ -90,19 +90,18 @@
             src = fileSetForCrate ./cron-ddns;
           }
         );
-
-        # TODO: leptos build
-        # admin-site = naersk'.buildPackage {
-        #   pname = "admin-site";
-        #   src = ./.;
-        #   gitSubmodules = true;
-        #   cargoBuild = "cargo leptos build";
-        #   PROTOC = with pkgs; lib.getExe protobuf;
-        # };
+        user-root = craneLib.buildPackage (
+          individualCrateArgs
+          // {
+            pname = "user-root";
+            cargoExtraArgs = "-p user-root";
+            src = fileSetForCrate ./user-root;
+          }
+        );
       in
       {
         checks = {
-          inherit cron-ddns;
+          inherit cron-ddns user-root;
 
           # Run clippy (and deny all warnings) on the workspace source,
           # again, reusing the dependency artifacts from above.
@@ -121,13 +120,12 @@
 
         # prod binaries
         packages = {
-          inherit cron-ddns;
+          inherit cron-ddns user-root;
         };
 
         apps = {
-          cron-ddns = flake-utils.lib.mkApp {
-            drv = cron-ddns;
-          };
+          cron-ddns = flake-utils.lib.mkApp { drv = cron-ddns; };
+          user-root = flake-utils.lib.mkApp { drv = user-root; };
         };
 
         # nix develop

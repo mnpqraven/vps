@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "admin-site",
+  "user-root",
   "cron-ddns",
   "database",
   "load-env",
