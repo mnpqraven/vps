@@ -4,6 +4,10 @@
   inputs = {
     self.submodules = true;
 
+    cargo-leptos = {
+      url = "github:benwis/cargo-leptos";
+      flake = false;
+    };
     crane.url = "github:ipetkov/crane";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -14,42 +18,45 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      flake-utils,
-      crane,
-      rust-overlay,
-      ...
-    }:
-    flake-utils.lib.eachDefaultSystem (
+    inputs:
+    inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import nixpkgs {
+        pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = [ (import rust-overlay) ];
+          overlays = [ (import inputs.rust-overlay) ];
         };
 
         inherit (pkgs) lib;
 
-        craneLib = (crane.mkLib pkgs).overrideToolchain (
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain (
           p: p.rust-bin.nightly.latest.default.override { targets = [ "wasm32-unknown-unknown" ]; }
         );
         src = craneLib.cleanCargoSource ./.;
+
+        commonNativeBuildInputs = with pkgs; [
+          pkg-config
+          openssl
+          # TODO: sqlx
+          # wasm
+          wasm-bindgen-cli
+          binaryen
+          cargo-generate
+          cargo-leptos
+          tailwindcss_4
+        ];
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
           inherit src;
           strictDeps = true;
 
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-          ];
+          nativeBuildInputs = commonNativeBuildInputs;
           buildInputs =
             with pkgs;
             [
+              pkg-config
               openssl
-              wasm-bindgen-cli
             ]
             ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
               # Additional darwin specific inputs can be set here
@@ -79,8 +86,17 @@
             fileset = lib.fileset.unions [
               ./Cargo.toml
               ./Cargo.lock
-              # (craneLib.fileset.commonCargoSources ./crates/my-common)
-              # (craneLib.fileset.commonCargoSources ./crates/my-workspace-hack)
+              (craneLib.fileset.commonCargoSources ./admin-site)
+              ./user-root
+              (craneLib.fileset.commonCargoSources ./cron-ddns)
+              (craneLib.fileset.commonCargoSources ./database)
+              (craneLib.fileset.commonCargoSources ./proto-build-help)
+              (craneLib.fileset.commonCargoSources ./vps-api)
+              (craneLib.fileset.commonCargoSources ./vps-rpc)
+              (craneLib.fileset.commonCargoSources ./proto-types)
+              (craneLib.fileset.commonCargoSources ./load-env)
+              # build.rs reads .proto files
+              ./proto-types/proto
               (craneLib.fileset.commonCargoSources crate)
             ];
           };
@@ -105,7 +121,15 @@
           individualCrateArgs
           // {
             pname = "user-root";
-            cargoExtraArgs = "-p user-root";
+            buildPhaseCargoCommand = ''
+              cargoBuildLog=$(mktemp cargoBuildLogXXXX.json)
+              cargo leptos build -p user-root --release >"$cargoBuildLog"
+            '';
+            installPhaseCommand = ''
+              mkdir -p $out/bin
+              cp target/release/user-root $out/bin/
+              cp -r target/site $out/bin/
+            '';
             src = fileSetForCrate ./user-root;
           }
         );
@@ -135,46 +159,34 @@
         };
 
         apps = {
-          cron-ddns = flake-utils.lib.mkApp { drv = cron-ddns; };
-          user-root = flake-utils.lib.mkApp { drv = user-root; };
+          cron-ddns = inputs.flake-utils.lib.mkApp { drv = cron-ddns; };
+          user-root = inputs.flake-utils.lib.mkApp { drv = user-root; };
         };
 
         # nix develop
         devShells.default = craneLib.devShell {
           # Inherit inputs from checks.
-          checks = self.checks.${system};
+          checks = inputs.self.checks.${system};
 
           # TODO: better env
-
           shellHook = ''
             export DATABASE_URL=postgres://postgres:postgres@localhost/mydatabase
             export RUSTFLAGS="--cfg erase_components"
           '';
-          packages = with pkgs; [
-            rust-analyzer
-
-            just
-            # TODO: fix autocomplete error
-            tailwindcss_4
-            bacon
-            grpcui
-            grpcurl
-            sqlx-cli
-
-            rustup
-            # cron-ddns dep
-            dig
-            protobuf
-            # TLS
-            pkg-config
-            openssl
-
-            # for wasm-opt building on release
-            binaryen
-            cargo-generate
-            cargo-leptos
-            leptosfmt
-          ];
+          packages =
+            with pkgs;
+            [
+              rust-analyzer
+              just
+              bacon
+              grpcui
+              grpcurl
+              sqlx-cli
+              dig
+              protobuf
+              leptosfmt
+            ]
+            ++ commonNativeBuildInputs;
         };
       }
     );

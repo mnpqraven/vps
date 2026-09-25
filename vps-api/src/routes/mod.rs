@@ -8,7 +8,6 @@ use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_rapidoc::RapiDoc;
 use utoipa_redoc::{Redoc, Servable};
-use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi()]
@@ -19,11 +18,10 @@ pub fn make_app_router() -> axum::Router {
         .merge(app_router())
         .split_for_parts();
 
-    let swagger = SwaggerUi::new("/swagger").url("/api/openapi-swagger.json", api.clone());
     let redoc = Redoc::with_url("/redoc", api.clone());
     let rapidoc = RapiDoc::with_url("/rapidoc", "/api/openapi-rapidoc.json", api.clone());
 
-    router.merge(swagger).merge(redoc).merge(rapidoc)
+    router.merge(redoc).merge(rapidoc)
 }
 
 pub fn app_router() -> OpenApiRouter {
@@ -39,5 +37,5 @@ pub fn app_router() -> OpenApiRouter {
 
 // basic handler that responds with a static string
 async fn root() -> &'static str {
-    "Go to /swagger for docs"
+    "Go to /redoc or /rapidoc for docs"
 }

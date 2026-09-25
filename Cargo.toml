@@ -11,6 +11,7 @@ members = [
   "vps-rpc",
 ]
 resolver = "2"
+metadata.crane.name = "vps"
 
 [profile.wasm-release]
 inherits = "release"

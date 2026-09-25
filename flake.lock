@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "cargo-leptos": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1699832556,
+        "narHash": "sha256-7o/yQanBBSA+MmMiGCYSjar4hZ8TRZoPiUniF5ELzXU=",
+        "owner": "benwis",
+        "repo": "cargo-leptos",
+        "rev": "e98b478b0c82af1469151eff30f4246b9af4a539",
+        "type": "github"
+      },
+      "original": {
+        "owner": "benwis",
+        "repo": "cargo-leptos",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1789760033,
@@ -35,11 +51,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1790055231,
-        "narHash": "sha256-QpXotokGh5eeMG1Njiuh27oP0rK6t5+cMp7ymXSs7mc=",
+        "lastModified": 1790238896,
+        "narHash": "sha256-ym4BG18Pu2awiJIehla1Lo9xiB2QYRcCzW3SB74gEBY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b6c98e9e6633ee64753b594ff4a5febf0367fc00",
+        "rev": "34ca302a9572963c02e385c056be37c85ff51b77",
         "type": "github"
       },
       "original": {
@@ -51,6 +67,7 @@
     },
     "root": {
       "inputs": {
+        "cargo-leptos": "cargo-leptos",
         "crane": "crane",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
