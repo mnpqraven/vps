@@ -34,8 +34,7 @@ pub fn HomePage() -> impl IntoView {
 
     view! {
         <div class="flex flex-col gap-4">
-            <h1 class="text-xl">"user facing"</h1>
-            <div>hello world</div>
+            <h1 class="text-xl">weading wlub was here</h1>
         </div>
     }
 }
