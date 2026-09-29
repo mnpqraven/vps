@@ -1,9 +1,1 @@
-# VPS control tools
-
-## Note on ports
-
-The default following ports are used:
-
-- 5000: API server
-- 5005: RPC server
-- 5010: Admin portal (leptos)
+# This project has been moved to [Codeberg](https://codeberg.org/mnpqraven/vps)
